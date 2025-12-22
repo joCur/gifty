@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getWishlist } from "@/lib/actions/wishlists";
 import { getItemClaims } from "@/lib/actions/claims";
@@ -45,32 +44,73 @@ export default async function FriendWishlistPage({
   // Map claims to items
   const claimsMap = new Map(claims.map((c) => [c.item_id, c]));
 
+  // Generate a consistent gradient based on owner's name
+  const gradients = [
+    "from-rose-400/20 to-pink-500/10",
+    "from-amber-400/20 to-orange-500/10",
+    "from-emerald-400/20 to-teal-500/10",
+    "from-blue-400/20 to-indigo-500/10",
+    "from-purple-400/20 to-violet-500/10",
+    "from-cyan-400/20 to-sky-500/10",
+  ];
+  const gradientIndex = (owner.display_name || "").charCodeAt(0) % gradients.length;
+  const gradient = gradients[gradientIndex];
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href={`/friends/${friendId}`}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+    <div className="space-y-8 lg:space-y-10">
+      {/* Header */}
+      <div className="flex flex-col gap-6">
+        {/* Back button */}
+        <Link
+          href={`/friends/${friendId}`}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back to {owner.display_name || "friend"}&apos;s profile
         </Link>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar className="h-10 w-10 shrink-0">
-            <AvatarImage src={owner.avatar_url || undefined} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold truncate">{wishlist.name}</h1>
-            <p className="text-sm text-muted-foreground truncate">
-              {owner.display_name}&apos;s wishlist
-            </p>
+
+        {/* Title row */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex items-start gap-4">
+            {/* Icon */}
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
+              <Gift className="w-7 h-7 text-primary" />
+            </div>
+
+            {/* Title and owner */}
+            <div className="min-w-0">
+              <h1 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold">
+                {wishlist.name}
+              </h1>
+              {/* Owner badge */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className={`relative w-6 h-6 rounded-md bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+                  <Avatar className="h-5 w-5 rounded-sm">
+                    <AvatarImage src={owner.avatar_url || undefined} className="rounded-sm" />
+                    <AvatarFallback className="rounded-sm bg-transparent text-[10px] font-medium">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {owner.display_name}&apos;s wishlist
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {items.length} {items.length === 1 ? "item" : "items"}
+              </p>
+            </div>
           </div>
         </div>
+
+        {wishlist.description && (
+          <p className="text-muted-foreground max-w-2xl">
+            {wishlist.description}
+          </p>
+        )}
       </div>
 
-      {wishlist.description && (
-        <p className="text-muted-foreground">{wishlist.description}</p>
-      )}
-
+      {/* Items */}
       <FriendWishlistItems
         items={items}
         wishlistId={wishlistId}

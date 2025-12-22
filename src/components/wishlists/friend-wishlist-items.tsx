@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ExternalLink, Check, Gift, Loader2 } from "lucide-react";
+import { ExternalLink, Check, Gift, Loader2, Package, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { claimItem, unclaimItem } from "@/lib/actions/claims";
 import { toast } from "sonner";
 import type { WishlistItem } from "@/lib/supabase/types";
@@ -76,27 +74,33 @@ export function FriendWishlistItems({
 
   if (items.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="rounded-full bg-muted p-4 mb-4">
-            <Gift className="w-8 h-8 text-muted-foreground" />
+      <div className="bg-card border border-border/50 rounded-3xl p-8 md:p-12 lg:p-16">
+        <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6">
+            <Gift className="w-10 h-10 text-primary" />
           </div>
-          <h3 className="font-semibold mb-2">No items yet</h3>
-          <p className="text-muted-foreground text-sm">
-            This wishlist is empty.
+          <h3 className="font-[family-name:var(--font-outfit)] text-xl sm:text-2xl font-semibold mb-3">
+            No items yet
+          </h3>
+          <p className="text-muted-foreground">
+            This wishlist is empty. Check back later!
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Claim items you plan to buy so others know not to get them.
-      </p>
+    <div className="space-y-6">
+      {/* Hint banner */}
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10">
+        <Sparkles className="w-4 h-4 text-primary shrink-0" />
+        <p className="text-sm text-muted-foreground">
+          Claim items you plan to buy so others know not to get them. The wishlist owner won&apos;t see who claimed what!
+        </p>
+      </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => {
           const claim = localClaims.get(item.id);
           const isClaimedByMe = claim?.claimed_by === currentUserId;
@@ -104,101 +108,137 @@ export function FriendWishlistItems({
           const isLoading = loadingItemId === item.id;
 
           return (
-            <Card
+            <div
               key={item.id}
-              className={
-                isClaimedByOther
-                  ? "opacity-60"
-                  : isClaimedByMe
-                  ? "ring-2 ring-green-500/50"
-                  : ""
-              }
+              className={`group relative h-full bg-card border rounded-2xl overflow-hidden transition-all duration-200 ${
+                isClaimedByMe
+                  ? "border-emerald-500/50 shadow-md shadow-emerald-500/10"
+                  : isClaimedByOther
+                  ? "border-border/50 opacity-60"
+                  : "border-border/50 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+              }`}
             >
-              <CardContent className="p-4">
-                <div className="flex gap-4">
-                  {item.image_url && (
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                      <Image
-                        src={item.image_url}
-                        alt={item.title}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className="font-medium truncate">{item.title}</h3>
-                        {item.price && (
-                          <p className="text-sm text-muted-foreground">
-                            {item.currency} {item.price}
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0"
-                        asChild
-                      >
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      </Button>
-                    </div>
+              {/* Hover gradient overlay */}
+              {!isClaimedByOther && (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
+              )}
 
-                    {item.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                        {item.description}
-                      </p>
-                    )}
+              {/* Image */}
+              <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+                {item.image_url ? (
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    fill
+                    className={`object-cover transition-transform duration-300 ${
+                      !isClaimedByOther ? "group-hover:scale-105" : ""
+                    }`}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Package className="w-12 h-12 text-muted-foreground/30" />
+                  </div>
+                )}
 
-                    <div className="flex items-center justify-between mt-3">
-                      {claim ? (
-                        <Badge
-                          variant={isClaimedByMe ? "default" : "secondary"}
-                          className="flex items-center gap-1"
-                        >
-                          <Check className="w-3 h-3" />
-                          {isClaimedByMe
-                            ? "You're getting this"
-                            : `${claim.claimer?.display_name || "Someone"} is getting this`}
-                        </Badge>
-                      ) : (
-                        <span />
-                      )}
-
-                      {!isClaimedByOther && (
-                        <Button
-                          size="sm"
-                          variant={isClaimedByMe ? "outline" : "default"}
-                          onClick={() =>
-                            isClaimedByMe
-                              ? handleUnclaim(item.id)
-                              : handleClaim(item.id)
-                          }
-                          disabled={isLoading}
-                        >
-                          {isLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : isClaimedByMe ? (
-                            "Unclaim"
-                          ) : (
-                            "I'll get this"
-                          )}
-                        </Button>
-                      )}
+                {/* Claimed overlay */}
+                {isClaimedByMe && (
+                  <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+                      <Check className="w-6 h-6 text-white" />
                     </div>
                   </div>
+                )}
+
+                {/* Other's claimed overlay */}
+                {isClaimedByOther && (
+                  <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
+                    <div className="px-3 py-1.5 rounded-full bg-muted/90 text-sm font-medium">
+                      Already claimed
+                    </div>
+                  </div>
+                )}
+
+                {/* Price badge */}
+                {item.price && (
+                  <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-background/90 backdrop-blur-sm text-sm font-medium shadow-sm">
+                    {item.currency && item.currency} {item.price}
+                  </div>
+                )}
+
+                {/* External link button */}
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur-sm shadow-sm hover:bg-background"
+                    asChild
+                  >
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Content */}
+              <div className="relative p-4">
+                <h3 className={`font-semibold line-clamp-2 ${
+                  !isClaimedByOther ? "group-hover:text-primary transition-colors" : ""
+                }`}>
+                  {item.title}
+                </h3>
+
+                {item.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1.5">
+                    {item.description}
+                  </p>
+                )}
+
+                {/* Claim status and button */}
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  {isClaimedByMe ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+                        <Check className="w-3 h-3" />
+                        You&apos;re getting this
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUnclaim(item.id)}
+                        disabled={isLoading}
+                        className="h-8"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          "Unclaim"
+                        )}
+                      </Button>
+                    </div>
+                  ) : isClaimedByOther ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Check className="w-3 h-3" />
+                      {claim.claimer?.display_name || "Someone"} is getting this
+                    </span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleClaim(item.id)}
+                      disabled={isLoading}
+                      className="w-full h-8 shadow-sm shadow-primary/20"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        "I'll get this"
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
