@@ -13,8 +13,10 @@ import { Loader2 } from "lucide-react";
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setIsLoading(true);
+    const formData = new FormData(e.currentTarget);
     const result = await signIn(formData);
     if (result?.error) {
       toast.error(result.error);
@@ -24,7 +26,7 @@ export default function LoginPage() {
 
   return (
     <Card>
-      <form action={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4 pt-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

@@ -46,16 +46,23 @@ export function AddItemSheet({
       return;
     }
 
+    // Auto-add https:// if scheme is missing
+    let normalizedUrl = url.trim();
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
+      normalizedUrl = `https://${normalizedUrl}`;
+      setUrl(normalizedUrl);
+    }
+
     // Basic URL validation
     try {
-      new URL(url);
+      new URL(normalizedUrl);
     } catch {
       toast.error("Please enter a valid URL");
       return;
     }
 
     setIsFetching(true);
-    const result = await fetchLinkMetadata(url);
+    const result = await fetchLinkMetadata(normalizedUrl);
 
     if ("error" in result) {
       toast.error(result.error);

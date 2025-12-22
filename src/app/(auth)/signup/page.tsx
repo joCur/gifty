@@ -13,7 +13,9 @@ import { Loader2 } from "lucide-react";
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -37,7 +39,7 @@ export default function SignupPage() {
 
   return (
     <Card>
-      <form action={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4 pt-6">
           <div className="space-y-2">
             <Label htmlFor="displayName">Display Name</Label>
