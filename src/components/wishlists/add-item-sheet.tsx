@@ -4,19 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchLinkMetadata, addItem } from "@/lib/actions/items";
 import { toast } from "sonner";
-import { Loader2, Link as LinkIcon, Sparkles } from "lucide-react";
+import { Loader2, Link as LinkIcon, Sparkles, Package } from "lucide-react";
 
 interface LinkMetadata {
   title: string;
@@ -106,39 +106,49 @@ export function AddItemSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="bottom" className="h-[90vh] sm:h-auto">
-        <SheetHeader>
-          <SheetTitle>Add Item</SheetTitle>
-          <SheetDescription>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader className="px-6">
+          <DialogTitle className="font-[family-name:var(--font-outfit)]">
+            Add Item
+          </DialogTitle>
+          <DialogDescription>
             Paste a link to automatically fetch product details.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         {!metadata ? (
-          <div className="py-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="url">Product URL</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com/product"
-                    className="pl-9"
-                    disabled={isFetching}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleFetchMetadata();
-                      }
-                    }}
-                  />
+          <div className="px-6 pb-6 space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400/20 to-indigo-500/10 flex items-center justify-center">
+                  <LinkIcon className="w-4 h-4 text-blue-500" />
                 </div>
-                <Button onClick={handleFetchMetadata} disabled={isFetching}>
+                <Label htmlFor="url" className="text-sm font-medium">
+                  Product URL
+                </Label>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  id="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com/product"
+                  className="h-11 rounded-xl bg-muted/50 border-border/50 focus:bg-background transition-colors"
+                  disabled={isFetching}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleFetchMetadata();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleFetchMetadata}
+                  disabled={isFetching}
+                  className="rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all"
+                >
                   {isFetching ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
@@ -149,63 +159,84 @@ export function AddItemSheet({
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground pl-1">
                 We&apos;ll automatically extract the product name, image, and price.
               </p>
             </div>
           </div>
         ) : (
-          <form action={handleAddItem} className="py-6 space-y-4">
-            <div className="flex gap-4">
-              {metadata.image_url && (
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
+          <form action={handleAddItem} className="px-6 pb-6 space-y-5">
+            {/* Preview card */}
+            <div className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
+              <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gradient-to-br from-muted to-muted/50 shrink-0">
+                {metadata.image_url ? (
                   <Image
                     src={metadata.image_url}
                     alt={metadata.title}
                     fill
                     className="object-cover"
-                    sizes="96px"
+                    sizes="80px"
                   />
-                </div>
-              )}
-              <div className="flex-1 space-y-3">
-                <div className="space-y-1">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    defaultValue={metadata.title}
-                    required
-                    disabled={isAdding}
-                  />
-                </div>
-                {metadata.price && (
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Price: </span>
-                    {metadata.currency} {metadata.price}
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Package className="w-8 h-8 text-muted-foreground/30" />
                   </div>
                 )}
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium line-clamp-2">{metadata.title}</p>
+                {metadata.price && (
+                  <p className="text-sm text-primary font-medium mt-1">
+                    {metadata.currency} {metadata.price}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="notes">Personal Notes (optional)</Label>
+
+            {/* Title field */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-medium">
+                Title
+              </Label>
+              <Input
+                id="title"
+                name="title"
+                defaultValue={metadata.title}
+                required
+                disabled={isAdding}
+                className="h-11 rounded-xl bg-muted/50 border-border/50 focus:bg-background transition-colors"
+              />
+            </div>
+
+            {/* Notes field */}
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-sm font-medium">
+                Personal Notes <span className="text-muted-foreground font-normal">(optional)</span>
+              </Label>
               <Input
                 id="notes"
                 name="notes"
                 placeholder="Size, color preference, etc."
                 disabled={isAdding}
+                className="h-11 rounded-xl bg-muted/50 border-border/50 focus:bg-background transition-colors"
               />
             </div>
-            <SheetFooter className="gap-2 sm:gap-0">
+
+            <DialogFooter className="gap-2 sm:gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleReset}
                 disabled={isAdding}
+                className="rounded-xl"
               >
                 Change URL
               </Button>
-              <Button type="submit" disabled={isAdding}>
+              <Button
+                type="submit"
+                disabled={isAdding}
+                className="rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all"
+              >
                 {isAdding ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -215,10 +246,10 @@ export function AddItemSheet({
                   "Add to Wishlist"
                 )}
               </Button>
-            </SheetFooter>
+            </DialogFooter>
           </form>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
