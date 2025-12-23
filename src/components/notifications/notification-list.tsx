@@ -1,0 +1,185 @@
+"use client";
+
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
+import { Bell, Gift, Users, UserPlus, Cake, Package, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import type { NotificationWithActor, NotificationType } from "@/lib/supabase/types";
+
+interface NotificationListProps {
+  notifications: NotificationWithActor[];
+  isLoading: boolean;
+  onMarkAsRead: (id: string) => Promise<{ success?: boolean; error?: string }>;
+  onMarkAllAsRead: () => Promise<{ success?: boolean; error?: string }>;
+}
+
+function getNotificationIcon(type: NotificationType) {
+  switch (type) {
+    case "friend_request_received":
+      return <UserPlus className="h-5 w-5 text-primary" />;
+    case "friend_request_accepted":
+      return <Users className="h-5 w-5 text-green-500" />;
+    case "birthday_reminder":
+      return <Cake className="h-5 w-5 text-pink-500" />;
+    case "item_added":
+      return <Package className="h-5 w-5 text-blue-500" />;
+    case "wishlist_created":
+      return <Gift className="h-5 w-5 text-purple-500" />;
+    default:
+      return <Bell className="h-5 w-5" />;
+  }
+}
+
+function getNotificationLink(notification: NotificationWithActor): string {
+  switch (notification.type) {
+    case "friend_request_received":
+      return "/friends";
+    case "friend_request_accepted":
+      return notification.actor_id ? `/friends/${notification.actor_id}` : "/friends";
+    case "birthday_reminder":
+      return notification.actor_id ? `/friends/${notification.actor_id}` : "/friends";
+    case "item_added":
+    case "wishlist_created":
+      if (notification.actor_id && notification.wishlist_id) {
+        return `/friends/${notification.actor_id}/wishlists/${notification.wishlist_id}`;
+      }
+      return notification.actor_id ? `/friends/${notification.actor_id}` : "/friends";
+    default:
+      return "/dashboard";
+  }
+}
+
+export function NotificationList({
+  notifications,
+  isLoading,
+  onMarkAsRead,
+  onMarkAllAsRead,
+}: NotificationListProps) {
+  const hasUnread = notifications.some((n) => !n.is_read);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+        <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <p className="text-muted-foreground">No notifications yet</p>
+        <p className="text-sm text-muted-foreground/70 mt-1">
+          You&apos;ll see updates from your friends here
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {hasUnread && (
+        <div className="flex justify-end px-6 py-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onMarkAllAsRead()}
+            className="text-xs"
+          >
+            <Check className="h-3 w-3 mr-1" />
+            Mark all as read
+          </Button>
+        </div>
+      )}
+      <Separator />
+      <ScrollArea className="flex-1">
+        <div className="divide-y divide-border">
+          {notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onMarkAsRead={onMarkAsRead}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
+interface NotificationItemProps {
+  notification: NotificationWithActor;
+  onMarkAsRead: (id: string) => Promise<{ success?: boolean; error?: string }>;
+}
+
+function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
+  const link = getNotificationLink(notification);
+  const initials = notification.actor?.display_name
+    ? notification.actor.display_name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
+
+  const handleClick = () => {
+    if (!notification.is_read) {
+      onMarkAsRead(notification.id);
+    }
+  };
+
+  return (
+    <Link
+      href={link}
+      onClick={handleClick}
+      className={cn(
+        "block px-6 py-4 hover:bg-muted/50 transition-colors",
+        !notification.is_read && "bg-primary/5"
+      )}
+    >
+      <div className="flex gap-3">
+        {notification.actor ? (
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarImage src={notification.actor.avatar_url || undefined} />
+            <AvatarFallback className="text-xs">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            {getNotificationIcon(notification.type)}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p
+              className={cn(
+                "text-sm leading-tight",
+                !notification.is_read && "font-semibold"
+              )}
+            >
+              {notification.title}
+            </p>
+            {!notification.is_read && (
+              <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground mt-0.5 leading-snug">
+            {notification.message}
+          </p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            {formatDistanceToNow(new Date(notification.created_at), {
+              addSuffix: true,
+            })}
+          </p>
+        </div>
+      </div>
+    </Link>
+  );
+}

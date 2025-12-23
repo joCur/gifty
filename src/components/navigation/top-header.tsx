@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import type { Profile } from "@/lib/supabase/types";
 
 interface TopHeaderProps {
   profile: Profile | null;
+  userId: string;
 }
 
-export function TopHeader({ profile }: TopHeaderProps) {
+export function TopHeader({ profile, userId }: TopHeaderProps) {
   const initials = profile?.display_name
     ? profile.display_name
         .split(" ")
@@ -31,14 +33,17 @@ export function TopHeader({ profile }: TopHeaderProps) {
               Giftify
             </span>
           </Link>
-          <Link href="/profile" className="group">
-            <Avatar className="h-9 w-9 ring-2 ring-border ring-offset-2 ring-offset-background transition-all group-hover:ring-primary/50">
-              <AvatarImage src={profile?.avatar_url || undefined} />
-              <AvatarFallback className="text-xs font-medium bg-secondary text-secondary-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          <div className="flex items-center gap-2">
+            <NotificationBell userId={userId} />
+            <Link href="/profile" className="group">
+              <Avatar className="h-9 w-9 ring-2 ring-border ring-offset-2 ring-offset-background transition-all group-hover:ring-primary/50">
+                <AvatarImage src={profile?.avatar_url || undefined} />
+                <AvatarFallback className="text-xs font-medium bg-secondary text-secondary-foreground">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
         </div>
       </div>
     </header>

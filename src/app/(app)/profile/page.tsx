@@ -1,8 +1,9 @@
 import { getProfile, signOut } from "@/lib/supabase/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User, Settings, Calendar, Sparkles } from "lucide-react";
+import { LogOut, Settings, Calendar, Sparkles, Bell } from "lucide-react";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { NotificationPreferences } from "@/components/notifications/notification-preferences";
 import { format } from "date-fns";
 
 export default async function ProfilePage() {
@@ -100,6 +101,24 @@ export default async function ProfilePage() {
           <div className="bg-card border border-border/50 rounded-2xl p-6 lg:p-8">
             <ProfileForm profile={profile} />
           </div>
+
+          {/* Notification Preferences Section */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-orange-500/10 flex items-center justify-center">
+              <Bell className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="font-[family-name:var(--font-outfit)] text-lg font-semibold">
+                Notifications
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Configure your notification preferences
+              </p>
+            </div>
+          </div>
+
+          {/* Notification Preferences Card */}
+          <NotificationPreferences />
 
           {/* Sign Out Section */}
           <div className="pt-6 border-t border-border/50">

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gift, Users, User, Settings, LogOut } from "lucide-react";
+import { Gift, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import type { Profile } from "@/lib/supabase/types";
 
 const navItems = [
@@ -15,9 +16,10 @@ const navItems = [
 
 interface SidebarProps {
   profile: Profile | null;
+  userId: string;
 }
 
-export function Sidebar({ profile }: SidebarProps) {
+export function Sidebar({ profile, userId }: SidebarProps) {
   const pathname = usePathname();
 
   const initials = profile?.display_name
@@ -33,14 +35,17 @@ export function Sidebar({ profile }: SidebarProps) {
     <aside className="hidden lg:flex flex-col w-64 border-r border-border/50 bg-card/50 h-screen sticky top-0">
       {/* Logo */}
       <div className="p-6 border-b border-border/50">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
-            <Gift className="w-5 h-5" />
-          </div>
-          <span className="font-[family-name:var(--font-outfit)] font-bold text-xl">
-            Giftify
-          </span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
+              <Gift className="w-5 h-5" />
+            </div>
+            <span className="font-[family-name:var(--font-outfit)] font-bold text-xl">
+              Giftify
+            </span>
+          </Link>
+          <NotificationBell userId={userId} />
+        </div>
       </div>
 
       {/* Navigation */}
