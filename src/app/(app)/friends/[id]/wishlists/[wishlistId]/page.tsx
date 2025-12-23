@@ -4,6 +4,7 @@ import { ArrowLeft, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getWishlist } from "@/lib/actions/wishlists";
 import { getItemClaims } from "@/lib/actions/claims";
+import { getSplitClaimsForWishlist } from "@/lib/actions/split-claims";
 import { getUser } from "@/lib/supabase/auth";
 import { FriendWishlistItems } from "@/components/wishlists/friend-wishlist-items";
 
@@ -13,10 +14,11 @@ export default async function FriendWishlistPage({
   params: Promise<{ id: string; wishlistId: string }>;
 }) {
   const { id: friendId, wishlistId } = await params;
-  const [wishlist, user, claims] = await Promise.all([
+  const [wishlist, user, claims, splitClaims] = await Promise.all([
     getWishlist(wishlistId),
     getUser(),
     getItemClaims(wishlistId),
+    getSplitClaimsForWishlist(wishlistId),
   ]);
 
   if (!wishlist || wishlist.user_id !== friendId) {
@@ -41,8 +43,9 @@ export default async function FriendWishlistPage({
   const items = wishlist.items || [];
   const currentUserId = user?.id;
 
-  // Map claims to items
+  // Map claims and split claims to items
   const claimsMap = new Map(claims.map((c) => [c.item_id, c]));
+  const splitClaimsMap = new Map(splitClaims.map((sc) => [sc.item_id, sc]));
 
   // Generate a consistent gradient based on owner's name
   const gradients = [
@@ -115,6 +118,7 @@ export default async function FriendWishlistPage({
         items={items}
         wishlistId={wishlistId}
         claimsMap={claimsMap}
+        splitClaimsMap={splitClaimsMap}
         currentUserId={currentUserId}
       />
     </div>

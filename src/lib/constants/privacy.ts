@@ -34,4 +34,6 @@ export const PRIVACY_CONFIG: Record<
   private: { label: "Private", icon: Lock },
   friends: { label: "All Friends", icon: Users },
   selected_friends: { label: "Selected Friends", icon: UserCheck },
+  // Legacy value - behaves same as 'friends'
+  public: { label: "All Friends", icon: Users },
 };

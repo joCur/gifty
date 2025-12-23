@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getSplitClaimForItem } from "./split-claims";
 
 export async function getItemClaims(wishlistId: string) {
   const supabase = await createClient();
@@ -75,6 +76,12 @@ export async function claimItem(itemId: string, wishlistId: string) {
       return { error: "You already claimed this item" };
     }
     return { error: "This item has already been claimed by someone else" };
+  }
+
+  // Check for split claims
+  const splitClaim = await getSplitClaimForItem(itemId);
+  if (splitClaim) {
+    return { error: "This item has a split claim in progress. Join the split instead!" };
   }
 
   const { error } = await supabase.from("item_claims").insert({

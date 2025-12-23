@@ -21,6 +21,12 @@ const privacyConfig: Record<WishlistPrivacy, { icon: React.ReactNode; label: str
     label: "Selected",
     color: "bg-blue-500/10 text-blue-600",
   },
+  // Legacy value - behaves same as 'friends'
+  public: {
+    icon: <Users className="w-3 h-3" />,
+    label: "All Friends",
+    color: "bg-emerald-500/10 text-emerald-600",
+  },
 };
 
 export default async function DashboardPage() {
