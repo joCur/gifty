@@ -24,11 +24,15 @@ export async function fetchLinkMetadata(
   url: string
 ): Promise<LinkMetadata | { error: string }> {
   const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
-  if (!session) {
+  // Use getSession for the access_token (needed for Authorization header)
+  // but validate with getUser to ensure the session is still valid
+  const [{ data: { session } }, { data: { user }, error: userError }] = await Promise.all([
+    supabase.auth.getSession(),
+    supabase.auth.getUser(),
+  ]);
+
+  if (userError || !user || !session) {
     return { error: "Not authenticated" };
   }
 

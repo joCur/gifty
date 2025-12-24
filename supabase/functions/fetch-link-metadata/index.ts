@@ -33,6 +33,7 @@ serve(async (req) => {
     // Verify the user is authenticated
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.error("Auth failed: Missing authorization header");
       return errorResponse("Missing authorization header", 401);
     }
 
@@ -54,6 +55,7 @@ serve(async (req) => {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error("Auth failed: Token verification failed", { authError, hasUser: !!user });
       return errorResponse("Unauthorized", 401);
     }
 
