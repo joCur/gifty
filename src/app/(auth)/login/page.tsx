@@ -1,16 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/supabase/auth";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showRegisteredMessage, setShowRegisteredMessage] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("registered") === "true") {
+      setShowRegisteredMessage(true);
+      toast.success("Account created! Please sign in.");
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,6 +35,16 @@ export default function LoginPage() {
 
   return (
     <div className="w-full">
+      {/* Success message for newly registered users */}
+      {showRegisteredMessage && (
+        <div className="mb-4 p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-2xl flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
+          <p className="text-sm text-green-800 dark:text-green-200">
+            Your account has been created. Please sign in with your credentials.
+          </p>
+        </div>
+      )}
+
       {/* Card container */}
       <div className="bg-card border border-border/50 rounded-3xl shadow-xl shadow-black/5 overflow-hidden">
         {/* Header */}
@@ -104,30 +124,34 @@ export default function LoginPage() {
             )}
           </Button>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border/50"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-3 text-muted-foreground">
-                New to Giftify?
-              </span>
-            </div>
+          {/* Invite-only notice */}
+          <div className="pt-2 text-center">
+            <p className="text-xs text-muted-foreground">
+              Giftify is invite-only. Ask a friend for an invite to join!
+            </p>
           </div>
-
-          {/* Sign up link */}
-          <Link href="/signup" className="block">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 rounded-xl text-base font-medium hover:bg-secondary transition-all"
-            >
-              Create an account
-            </Button>
-          </Link>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full">
+        <div className="bg-card border border-border/50 rounded-3xl shadow-xl shadow-black/5 overflow-hidden p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-1/2"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-12 bg-muted rounded"></div>
+            <div className="h-12 bg-muted rounded"></div>
+            <div className="h-12 bg-muted rounded"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

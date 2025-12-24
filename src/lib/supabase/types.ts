@@ -76,6 +76,48 @@ export type Database = {
           },
         ]
       }
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invite_codes_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       item_claims: {
         Row: {
           claimed_by: string
@@ -483,6 +525,10 @@ export type Database = {
         Args: { viewer_id: string; wishlist_id: string }
         Returns: boolean
       }
+      consume_invite_and_befriend: {
+        Args: { invite_code: string; new_user_id: string }
+        Returns: undefined
+      }
       get_split_claim_item_info: {
         Args: { p_item_id: string }
         Returns: {
@@ -517,6 +563,15 @@ export type Database = {
         Returns: undefined
       }
       send_birthday_reminders: { Args: never; Returns: undefined }
+      validate_invite_code: {
+        Args: { invite_code: string }
+        Returns: {
+          error_message: string
+          inviter_id: string
+          inviter_name: string
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       friendship_status: "pending" | "accepted" | "declined"
@@ -682,76 +737,5 @@ export const Constants = {
   },
 } as const
 
-// Helper types for easier usage
-export type WishlistPrivacy = Database["public"]["Enums"]["wishlist_privacy"];
-export type FriendshipStatus = Database["public"]["Enums"]["friendship_status"];
-export type NotificationType = Database["public"]["Enums"]["notification_type"];
-export type SplitClaimStatus = Database["public"]["Enums"]["split_claim_status"];
 
-export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type ProfileWithEmail = Profile & { email?: string };
-export type Wishlist = Database["public"]["Tables"]["wishlists"]["Row"];
-export type WishlistItem = Database["public"]["Tables"]["wishlist_items"]["Row"];
-export type Friendship = Database["public"]["Tables"]["friendships"]["Row"];
-export type ItemClaim = Database["public"]["Tables"]["item_claims"]["Row"];
-export type SplitClaim = Database["public"]["Tables"]["split_claims"]["Row"];
-export type SplitClaimParticipant = Database["public"]["Tables"]["split_claim_participants"]["Row"];
-
-// Extended types with relations
-export type WishlistWithItems = Wishlist & {
-  items: WishlistItem[];
-};
-
-export type WishlistWithOwner = Wishlist & {
-  owner: Profile;
-};
-
-export type FriendshipWithProfiles = Friendship & {
-  requester: Profile;
-  addressee: Profile;
-};
-
-export type WishlistItemWithClaim = WishlistItem & {
-  claim?: ItemClaim | null;
-};
-
-// Notification types
-export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
-export type NotificationPreferences =
-  Database["public"]["Tables"]["notification_preferences"]["Row"];
-
-// Notification with related data (actor profile for display)
-export type NotificationWithActor = Notification & {
-  actor: Pick<Profile, "id" | "display_name" | "avatar_url"> | null;
-  wishlist: Pick<Wishlist, "id" | "name" | "user_id"> | null;
-  item: Pick<WishlistItem, "id" | "title"> | null;
-};
-
-// Wishlist selected friends table types
-export interface WishlistSelectedFriend {
-  id: string;
-  wishlist_id: string;
-  friend_id: string;
-  created_at: string;
-}
-
-// Friend with selection state (for friend picker UI)
-export interface SelectableFriend {
-  friendshipId: string;
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  birthday: string | null;
-  isSelected?: boolean;
-}
-
-// Split claim with full participants info
-export interface SplitClaimWithParticipants extends SplitClaim {
-  initiator: Pick<Profile, "id" | "display_name"> | null;
-  participants: {
-    id: string;
-    user_id: string;
-    joined_at: string;
-    user: Pick<Profile, "id" | "display_name"> | null;
-  }[];
-}
+export * from "./types.custom";
