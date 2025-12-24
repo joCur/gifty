@@ -25,42 +25,22 @@ export async function fetchLinkMetadata(
 ): Promise<LinkMetadata | { error: string }> {
   const supabase = await createClient();
 
-  // Use getSession for the access_token (needed for Authorization header)
-  // but validate with getUser to ensure the session is still valid
-  const [{ data: { session } }, { data: { user }, error: userError }] = await Promise.all([
-    supabase.auth.getSession(),
-    supabase.auth.getUser(),
-  ]);
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-  if (userError || !user || !session) {
+  if (userError || !user) {
     return { error: "Not authenticated" };
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const { data, error } = await supabase.functions.invoke("fetch-link-metadata", {
+    body: { url },
+  });
 
-  try {
-    const response = await fetch(
-      `${supabaseUrl}/functions/v1/fetch-link-metadata`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      return { error: errorData.error || "Failed to fetch metadata" };
-    }
-
-    return await response.json();
-  } catch (error) {
+  if (error) {
     console.error("Error fetching link metadata:", error);
-    return { error: "Failed to fetch link metadata" };
+    return { error: error.message || "Failed to fetch metadata" };
   }
+
+  return data;
 }
 
 export async function addItem(wishlistId: string, formData: FormData) {

@@ -9,44 +9,29 @@ export async function signUp(formData: FormData, inviteCode: string) {
   const password = formData.get("password") as string;
   const displayName = formData.get("displayName") as string;
 
+  const supabase = await createClient();
+
   // Call edge function for secure user creation
   // The edge function uses service role key to create users,
   // keeping admin credentials out of the app
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return { error: "Server configuration error" };
+  const { data, error } = await supabase.functions.invoke("create-invited-user", {
+    body: {
+      email,
+      password,
+      displayName,
+      inviteCode,
+    },
+  });
+
+  if (error || data?.error) {
+    console.error("Signup error:", error || data?.error);
+    return { error: data?.error || error?.message || "Failed to create account" };
   }
 
-  try {
-    const response = await fetch(`${supabaseUrl}/functions/v1/create-invited-user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${supabaseAnonKey}`,
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        displayName,
-        inviteCode,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || result.error) {
-      return { error: result.error || "Failed to create account" };
-    }
-
-    // Account created successfully - redirect to login
-    // User needs to sign in since we used admin API (no auto-session)
-    revalidatePath("/", "layout");
-    redirect("/login?registered=true");
-  } catch (error) {
-    console.error("Signup error:", error);
-    return { error: "Failed to connect to registration service" };
-  }
+  // Account created successfully - redirect to login
+  // User needs to sign in since we used admin API (no auto-session)
+  revalidatePath("/", "layout");
+  redirect("/login?registered=true");
 }
 
 export async function signIn(formData: FormData) {
