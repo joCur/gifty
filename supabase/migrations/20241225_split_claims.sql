@@ -6,7 +6,7 @@ CREATE TYPE split_claim_status AS ENUM ('pending', 'confirmed');
 
 -- Split claims table (one per item, managed by initiator)
 CREATE TABLE split_claims (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   item_id UUID NOT NULL REFERENCES wishlist_items(id) ON DELETE CASCADE,
   initiated_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   target_participants INT NOT NULL CHECK (target_participants >= 2 AND target_participants <= 10),
@@ -20,7 +20,7 @@ CREATE TABLE split_claims (
 
 -- Split claim participants junction table
 CREATE TABLE split_claim_participants (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   split_claim_id UUID NOT NULL REFERENCES split_claims(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   joined_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,

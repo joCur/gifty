@@ -9,7 +9,7 @@ ALTER TYPE wishlist_privacy ADD VALUE 'selected_friends';
 
 -- Step 2: Create new table for selected friend visibility
 CREATE TABLE wishlist_selected_friends (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   wishlist_id UUID NOT NULL REFERENCES wishlists(id) ON DELETE CASCADE,
   friend_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,

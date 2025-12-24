@@ -356,11 +356,11 @@ export function FriendWishlistItems({
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
                 )}
 
-                {/* Image */}
+                {/* Image - prefer custom uploaded image over external URL */}
                 <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-                  {item.image_url ? (
+                  {(item.custom_image_url || item.image_url) ? (
                     <Image
-                      src={item.image_url}
+                      src={item.custom_image_url || item.image_url!}
                       alt={item.title}
                       fill
                       className={`object-cover transition-transform duration-300 ${
@@ -732,10 +732,10 @@ export function FriendWishlistItems({
             <div className="relative py-4 space-y-6">
               {/* Item preview */}
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/50">
-                {splitDialogItem.image_url ? (
+                {(splitDialogItem.custom_image_url || splitDialogItem.image_url) ? (
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 shadow-md">
                     <Image
-                      src={splitDialogItem.image_url}
+                      src={splitDialogItem.custom_image_url || splitDialogItem.image_url!}
                       alt={splitDialogItem.title}
                       fill
                       className="object-cover"

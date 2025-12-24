@@ -1,8 +1,8 @@
 -- Giftify Database Schema
 -- Initial migration with all tables and RLS policies
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: Using gen_random_uuid() which is built into PostgreSQL 13+
+-- No extension needed (uuid-ossp is in extensions schema on Supabase cloud)
 
 -- Create custom types
 CREATE TYPE wishlist_privacy AS ENUM ('public', 'friends', 'private');
@@ -20,7 +20,7 @@ CREATE TABLE profiles (
 
 -- Wishlists table
 CREATE TABLE wishlists (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
@@ -31,7 +31,7 @@ CREATE TABLE wishlists (
 
 -- Wishlist items table
 CREATE TABLE wishlist_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   wishlist_id UUID NOT NULL REFERENCES wishlists(id) ON DELETE CASCADE,
   url TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE wishlist_items (
 
 -- Friendships table
 CREATE TABLE friendships (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   requester_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   addressee_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   status friendship_status DEFAULT 'pending' NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE friendships (
 
 -- Item claims table (for gift coordination)
 CREATE TABLE item_claims (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   item_id UUID NOT NULL REFERENCES wishlist_items(id) ON DELETE CASCADE,
   claimed_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,

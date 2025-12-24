@@ -127,9 +127,9 @@ export function ClaimedItemsSection() {
                       className="absolute inset-0 z-0"
                     />
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-muted">
-                      {item.image_url ? (
+                      {(item.custom_image_url || item.image_url) ? (
                         <Image
-                          src={item.image_url}
+                          src={item.custom_image_url || item.image_url!}
                           alt={item.title}
                           fill
                           className="object-cover"

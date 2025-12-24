@@ -3,6 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "./helpers";
 import { revalidatePath } from "next/cache";
+import { cleanupItemImage } from "./item-images";
+import {
+  validateImageFile,
+  generateStorageFileName,
+} from "@/lib/utils/storage";
+
+const BUCKET_NAME = "item-images";
 
 interface LinkMetadata {
   title: string;
@@ -75,24 +82,73 @@ export async function addItem(wishlistId: string, formData: FormData) {
     }
 
     const description = formData.get("description") as string | null;
-    const imageUrl = formData.get("image_url") as string | null;
     const price = formData.get("price") as string | null;
     const currency = formData.get("currency") as string | null;
     const notes = formData.get("notes") as string | null;
 
-    const { error } = await supabase.from("wishlist_items").insert({
-      wishlist_id: wishlistId,
-      url: url?.trim() || null,
-      title: title.trim(),
-      description: description?.trim() || null,
-      image_url: imageUrl?.trim() || null,
-      price: price?.trim() || null,
-      currency: currency?.trim() || null,
-      notes: notes?.trim() || null,
-    });
+    // Handle image mode - either uploaded custom image or external URL
+    const imageMode = formData.get("image_mode") as string | null;
+    const imageUrl = formData.get("image_url") as string | null;
+    const imageFile = formData.get("image_file") as File | null;
 
-    if (error) {
-      return { error: error.message };
+    // Check if we have a file to upload
+    const hasImageFile = imageFile && imageFile.size > 0 && imageMode === "upload";
+
+    // Validate file if provided
+    if (hasImageFile) {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        return { error: validationError };
+      }
+    }
+
+    // Create the item first
+    const { data: newItem, error: insertError } = await supabase
+      .from("wishlist_items")
+      .insert({
+        wishlist_id: wishlistId,
+        url: url?.trim() || null,
+        title: title.trim(),
+        description: description?.trim() || null,
+        image_url: imageMode === "url" ? imageUrl?.trim() || null : null,
+        custom_image_url: null, // Will be updated after upload if needed
+        price: price?.trim() || null,
+        currency: currency?.trim() || null,
+        notes: notes?.trim() || null,
+      })
+      .select("id")
+      .single();
+
+    if (insertError || !newItem) {
+      return { error: insertError?.message || "Failed to create item" };
+    }
+
+    // If we have a file, upload it and update the item
+    if (hasImageFile) {
+      const fileName = generateStorageFileName(user.id, newItem.id, imageFile.type);
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(fileName, imageFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        // Item was created but image upload failed - don't fail the whole operation
+        // The user can add the image later
+      } else {
+        // Get public URL and update the item
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+
+        await supabase
+          .from("wishlist_items")
+          .update({ custom_image_url: publicUrl })
+          .eq("id", newItem.id);
+      }
     }
 
     revalidatePath(`/wishlists/${wishlistId}`);
@@ -127,17 +183,84 @@ export async function updateItem(
     }
 
     const description = formData.get("description") as string | null;
-    const imageUrl = formData.get("image_url") as string | null;
     const price = formData.get("price") as string | null;
     const currency = formData.get("currency") as string | null;
     const notes = formData.get("notes") as string | null;
+
+    // Handle image mode - either uploaded custom image or external URL
+    const imageMode = formData.get("image_mode") as string | null;
+    const existingCustomImageUrl = formData.get("custom_image_url") as string | null;
+    const imageUrl = formData.get("image_url") as string | null;
+    const imageFile = formData.get("image_file") as File | null;
+
+    // Check if we have a new file to upload
+    const hasNewImageFile = imageFile && imageFile.size > 0 && imageMode === "upload";
+
+    // Validate file if provided
+    if (hasNewImageFile) {
+      const validationError = validateImageFile(imageFile);
+      if (validationError) {
+        return { error: validationError };
+      }
+    }
+
+    // Get current item to check if we need to clean up old custom image
+    const { data: currentItem } = await supabase
+      .from("wishlist_items")
+      .select("custom_image_url")
+      .eq("id", itemId)
+      .single();
+
+    let newCustomImageUrl: string | null = null;
+    const newImageUrl = imageMode === "url" ? imageUrl?.trim() || null : null;
+
+    // Handle image based on mode
+    if (imageMode === "upload") {
+      if (hasNewImageFile) {
+        // Upload new file
+        const fileName = generateStorageFileName(user.id, itemId, imageFile.type);
+
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fileName, imageFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          return { error: "Failed to upload image. Please try again." };
+        }
+
+        // Get public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+
+        newCustomImageUrl = publicUrl;
+
+        // Clean up old custom image if it exists and is different
+        if (currentItem?.custom_image_url && currentItem.custom_image_url !== newCustomImageUrl) {
+          await cleanupItemImage(currentItem.custom_image_url);
+        }
+      } else {
+        // Keep existing custom image URL
+        newCustomImageUrl = existingCustomImageUrl?.trim() || null;
+      }
+    } else if (imageMode === "url") {
+      // Switching to URL mode - clean up old custom image
+      if (currentItem?.custom_image_url) {
+        await cleanupItemImage(currentItem.custom_image_url);
+      }
+    }
 
     const { error } = await supabase
       .from("wishlist_items")
       .update({
         title: title.trim(),
         description: description?.trim() || null,
-        image_url: imageUrl?.trim() || null,
+        image_url: newImageUrl,
+        custom_image_url: newCustomImageUrl,
         price: price?.trim() || null,
         currency: currency?.trim() || null,
         notes: notes?.trim() || null,
@@ -170,6 +293,13 @@ export async function deleteItem(itemId: string, wishlistId: string) {
       return { error: "Not authorized" };
     }
 
+    // Get item to clean up custom image if exists
+    const { data: item } = await supabase
+      .from("wishlist_items")
+      .select("custom_image_url")
+      .eq("id", itemId)
+      .single();
+
     const { error } = await supabase
       .from("wishlist_items")
       .delete()
@@ -177,6 +307,11 @@ export async function deleteItem(itemId: string, wishlistId: string) {
 
     if (error) {
       return { error: error.message };
+    }
+
+    // Clean up custom image from storage after successful deletion
+    if (item?.custom_image_url) {
+      await cleanupItemImage(item.custom_image_url);
     }
 
     revalidatePath(`/wishlists/${wishlistId}`);

@@ -69,9 +69,9 @@ export function FeedCard({ item }: FeedCardProps) {
       {/* Image */}
       <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
         <Link href={wishlistUrl} className="absolute inset-0 z-0">
-          {item.item.image_url ? (
+          {(item.item.custom_image_url || item.item.image_url) ? (
             <Image
-              src={item.item.image_url}
+              src={item.item.custom_image_url || item.item.image_url!}
               alt={item.item.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"

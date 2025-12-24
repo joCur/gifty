@@ -21,6 +21,7 @@ export interface FriendItemActivity extends BaseFeedItem {
     title: string;
     description: string | null;
     image_url: string | null;
+    custom_image_url: string | null;
     price: string | null;
     currency: string | null;
     url: string | null;
@@ -70,6 +71,7 @@ export interface ClaimedItem {
   title: string;
   description: string | null;
   image_url: string | null;
+  custom_image_url: string | null;
   price: string | null;
   currency: string | null;
   url: string | null;

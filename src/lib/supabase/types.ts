@@ -344,6 +344,7 @@ export type Database = {
         Row: {
           created_at: string
           currency: string | null
+          custom_image_url: string | null
           description: string | null
           id: string
           image_url: string | null
@@ -358,6 +359,7 @@ export type Database = {
         Insert: {
           created_at?: string
           currency?: string | null
+          custom_image_url?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -372,6 +374,7 @@ export type Database = {
         Update: {
           created_at?: string
           currency?: string | null
+          custom_image_url?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
@@ -742,22 +745,13 @@ export interface SelectableFriend {
   isSelected?: boolean;
 }
 
-// Split claim with participants and profile data
-export interface SplitClaimWithParticipants {
-  id: string;
-  item_id: string;
-  initiated_by: string;
-  target_participants: number;
-  status: SplitClaimStatus;
-  created_at: string;
-  updated_at: string;
-  confirmed_at: string | null;
+// Split claim with full participants info
+export interface SplitClaimWithParticipants extends SplitClaim {
   initiator: Pick<Profile, "id" | "display_name"> | null;
-  participants: Array<{
+  participants: {
     id: string;
     user_id: string;
     joined_at: string;
     user: Pick<Profile, "id" | "display_name"> | null;
-  }>;
+  }[];
 }
-

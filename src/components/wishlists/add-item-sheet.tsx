@@ -261,6 +261,7 @@ export function AddItemSheet({
               defaultValues={formDefaults}
               disabled={isAdding}
               showUrlField={mode === "manual-entry"}
+              wishlistId={wishlistId}
             />
 
             <DialogFooter className="gap-2 sm:gap-2 pt-2">

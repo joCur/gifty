@@ -62,12 +62,15 @@ export function EditItemDialog({
               title: item.title,
               description: item.description,
               image_url: item.image_url,
+              custom_image_url: item.custom_image_url,
               price: item.price,
               currency: item.currency,
               notes: item.notes,
             }}
             disabled={isUpdating}
             showUrlField={false}
+            itemId={item.id}
+            wishlistId={wishlistId}
           />
 
           <DialogFooter className="gap-2 sm:gap-2 pt-2">

@@ -58,6 +58,7 @@ export async function getFriendActivityFeed(
       title,
       description,
       image_url,
+      custom_image_url,
       price,
       currency,
       url,
@@ -143,6 +144,7 @@ export async function getFriendActivityFeed(
         title: item.title,
         description: item.description,
         image_url: item.image_url,
+        custom_image_url: item.custom_image_url,
         price: item.price,
         currency: item.currency,
         url: item.url,
@@ -184,6 +186,7 @@ export async function getMyClaimedItems(): Promise<ClaimedItemGroup[]> {
         title,
         description,
         image_url,
+        custom_image_url,
         price,
         currency,
         url,
@@ -224,6 +227,7 @@ export async function getMyClaimedItems(): Promise<ClaimedItemGroup[]> {
       title: string;
       description: string | null;
       image_url: string | null;
+      custom_image_url: string | null;
       price: string | null;
       currency: string | null;
       url: string | null;
@@ -255,6 +259,7 @@ export async function getMyClaimedItems(): Promise<ClaimedItemGroup[]> {
       title: item.title,
       description: item.description,
       image_url: item.image_url,
+      custom_image_url: item.custom_image_url,
       price: item.price,
       currency: item.currency,
       url: item.url,

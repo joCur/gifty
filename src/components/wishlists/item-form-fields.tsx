@@ -6,17 +6,18 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Package,
   FileText,
-  ImageIcon,
   Link as LinkIcon,
   StickyNote,
   DollarSign,
 } from "lucide-react";
+import { ItemImageField } from "./item-image-field";
 
 export interface ItemFormValues {
   url?: string | null;
   title: string;
   description?: string | null;
   image_url?: string | null;
+  custom_image_url?: string | null;
   price?: string | null;
   currency?: string | null;
   notes?: string | null;
@@ -26,12 +27,16 @@ interface ItemFormFieldsProps {
   defaultValues?: Partial<ItemFormValues>;
   disabled?: boolean;
   showUrlField?: boolean;
+  itemId?: string;
+  wishlistId?: string;
 }
 
 export function ItemFormFields({
   defaultValues = {},
   disabled = false,
   showUrlField = false,
+  itemId,
+  wishlistId,
 }: ItemFormFieldsProps) {
   return (
     <div className="space-y-5">
@@ -138,29 +143,14 @@ export function ItemFormFields({
         </div>
       </div>
 
-      {/* Image URL field */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-400/20 to-rose-500/10 flex items-center justify-center">
-            <ImageIcon className="w-4 h-4 text-pink-600" />
-          </div>
-          <Label htmlFor="image_url" className="text-sm font-medium">
-            Image URL{" "}
-            <span className="text-muted-foreground font-normal">
-              (optional)
-            </span>
-          </Label>
-        </div>
-        <Input
-          id="image_url"
-          name="image_url"
-          type="url"
-          defaultValue={defaultValues.image_url || ""}
-          disabled={disabled}
-          placeholder="https://example.com/image.jpg"
-          className="h-11 rounded-xl bg-muted/50 border-border/50 focus:bg-background transition-colors"
-        />
-      </div>
+      {/* Image field with upload/URL toggle */}
+      <ItemImageField
+        defaultCustomImageUrl={defaultValues.custom_image_url}
+        defaultImageUrl={defaultValues.image_url}
+        itemId={itemId}
+        wishlistId={wishlistId}
+        disabled={disabled}
+      />
 
       {/* Notes field */}
       <div className="space-y-2">
