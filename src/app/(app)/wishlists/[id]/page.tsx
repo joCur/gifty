@@ -59,6 +59,16 @@ export default async function WishlistPage({
   const privacy = privacyConfig[wishlist.privacy];
   const isArchived = wishlist.is_archived;
 
+  // DEBUG: Visible debugging for production
+  const debugInfo = {
+    hasUser: !!user,
+    userId: user?.id?.slice(0, 8) + '...',
+    wishlistUserId: wishlist.user_id?.slice(0, 8) + '...',
+    isOwner,
+    isArchived,
+    shouldShowButton: isOwner && !isArchived,
+  };
+
   // Map ownership flags to items (only pending flags for owner)
   const ownershipFlagsMap = new Map(
     ownershipFlags
@@ -68,6 +78,19 @@ export default async function WishlistPage({
 
   return (
     <div className="space-y-8 lg:space-y-10">
+      {/* DEBUG BANNER - Remove after debugging */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4">
+        <div className="text-xs font-mono">
+          <div><strong>DEBUG INFO:</strong></div>
+          <div>hasUser: {String(debugInfo.hasUser)}</div>
+          <div>userId: {debugInfo.userId}</div>
+          <div>wishlistUserId: {debugInfo.wishlistUserId}</div>
+          <div>isOwner: {String(debugInfo.isOwner)}</div>
+          <div>isArchived: {String(debugInfo.isArchived)}</div>
+          <div>shouldShowButton: {String(debugInfo.shouldShowButton)}</div>
+        </div>
+      </div>
+
       {/* Archived Banner */}
       {isOwner && isArchived && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
