@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "./helpers";
 import { revalidatePath } from "next/cache";
-import type { NotificationWithActor } from "@/lib/supabase/types";
+import type { NotificationWithActor } from "@/lib/supabase/types.custom";
 
 /**
  * Get user's notifications with related actor, wishlist, and item data

@@ -44,7 +44,7 @@ import {
 } from "@/lib/actions/split-claims";
 import { flagItemAsOwned } from "@/lib/actions/ownership-flags";
 import { toast } from "sonner";
-import type { WishlistItem, SplitClaimWithParticipants } from "@/lib/supabase/types";
+import type { WishlistItem, SplitClaimWithParticipants } from "@/lib/supabase/types.custom";
 import { getInitials } from "@/lib/utils";
 
 interface Claim {

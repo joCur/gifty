@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Gift } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import type { ProfileWithEmail } from "@/lib/supabase/types";
+import type { ProfileWithEmail } from "@/lib/supabase/types.custom";
 
 interface TopHeaderProps {
   profile: ProfileWithEmail | null;

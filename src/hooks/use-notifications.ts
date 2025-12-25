@@ -8,7 +8,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from "@/lib/actions/notifications";
-import type { NotificationWithActor } from "@/lib/supabase/types";
+import type { NotificationWithActor } from "@/lib/supabase/types.custom";
 
 // Shared query for notification with relations
 const NOTIFICATION_SELECT = `

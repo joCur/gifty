@@ -83,7 +83,11 @@ export async function flagItemAsOwned(itemId: string, wishlistId: string) {
 /**
  * Helper: Verify user owns the item and return wishlist ID
  */
-async function verifyItemOwnership(supabase: any, userId: string, itemId: string) {
+async function verifyItemOwnership(
+  supabase: any,
+  userId: string,
+  itemId: string
+): Promise<{ wishlistId: string } | { error: string }> {
   const { data: item } = await supabase
     .from("wishlist_items")
     .select("wishlist_id, wishlists!inner(user_id)")
@@ -104,7 +108,7 @@ async function resolveOwnershipFlag(
   flagId: string,
   itemId: string,
   status: "confirmed" | "denied"
-) {
+): Promise<{ success: true } | { error: string }> {
   const { supabase, user } = await requireAuth();
 
   // Verify ownership

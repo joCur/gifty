@@ -13,7 +13,7 @@ import {
 import { updateItem } from "@/lib/actions/items";
 import { toast } from "sonner";
 import { Loader2, Pencil } from "lucide-react";
-import type { WishlistItem } from "@/lib/supabase/types";
+import type { WishlistItem } from "@/lib/supabase/types.custom";
 import { ItemFormFields } from "./item-form-fields";
 
 interface EditItemDialogProps {

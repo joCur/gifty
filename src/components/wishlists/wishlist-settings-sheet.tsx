@@ -14,15 +14,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateWishlist, deleteWishlist } from "@/lib/actions/wishlists";
+import { updateWishlist, deleteWishlist, archiveWishlist, unarchiveWishlist } from "@/lib/actions/wishlists";
 import {
   getFriendsWithSelectionState,
   updateWishlistSelectedFriends,
 } from "@/lib/actions/wishlist-visibility";
 import { toast } from "sonner";
-import { Loader2, Trash2, Lock, Users, UserCheck, Settings, AlertTriangle } from "lucide-react";
+import { Loader2, Trash2, Lock, Users, UserCheck, Settings, AlertTriangle, Archive, ArchiveRestore } from "lucide-react";
 import { FriendPickerDialog } from "./friend-picker-dialog";
-import type { Wishlist, WishlistPrivacy } from "@/lib/supabase/types";
+import type { Wishlist, WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 const privacyOptions: {
   value: WishlistPrivacy;
@@ -64,8 +64,10 @@ export function WishlistSettingsSheet({
   const [open, setOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [privacy, setPrivacy] = useState<WishlistPrivacy>(wishlist.privacy);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
   const [hasLoadedFriends, setHasLoadedFriends] = useState(false);
   const router = useRouter();
@@ -139,6 +141,38 @@ export function WishlistSettingsSheet({
     } else {
       toast.success("Wishlist deleted");
       router.push("/dashboard");
+    }
+  }
+
+  async function handleArchive() {
+    setIsArchiving(true);
+    const result = await archiveWishlist(wishlist.id);
+
+    if (result.error) {
+      toast.error(result.error);
+      setIsArchiving(false);
+      setShowArchiveConfirm(false);
+    } else {
+      toast.success("Wishlist archived");
+      setOpen(false);
+      setIsArchiving(false);
+      setShowArchiveConfirm(false);
+      router.push("/wishlists");
+    }
+  }
+
+  async function handleUnarchive() {
+    setIsArchiving(true);
+    const result = await unarchiveWishlist(wishlist.id);
+
+    if (result.error) {
+      toast.error(result.error);
+      setIsArchiving(false);
+    } else {
+      toast.success("Wishlist unarchived");
+      setOpen(false);
+      setIsArchiving(false);
+      router.refresh();
     }
   }
 
@@ -249,55 +283,139 @@ export function WishlistSettingsSheet({
         </form>
 
         {/* Danger zone */}
-        <div className="px-6 pb-6 pt-2 border-t border-border/50">
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-            <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-destructive text-sm">Delete Wishlist</h4>
-              <p className="text-xs text-muted-foreground mt-0.5 mb-3">
-                This will permanently remove all items.
-              </p>
-              {!showDeleteConfirm ? (
+        <div className="px-6 pb-6 pt-2 border-t border-border/50 space-y-4">
+          {/* Archive section */}
+          {wishlist.is_archived ? (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+              <ArchiveRestore className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-emerald-600 text-sm">Unarchive Wishlist</h4>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                  Make this wishlist visible to friends again and enable editing.
+                </p>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
+                  onClick={handleUnarchive}
+                  disabled={isArchiving}
                   className="rounded-lg"
                 >
-                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                  Delete
+                  {isArchiving ? (
+                    <>
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      Unarchiving...
+                    </>
+                  ) : (
+                    <>
+                      <ArchiveRestore className="w-3.5 h-3.5 mr-1.5" />
+                      Unarchive
+                    </>
+                  )}
                 </Button>
-              ) : (
-                <div className="flex gap-2">
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+              <Archive className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-amber-600 text-sm">Archive Wishlist</h4>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                  Hide from friends and remove all gift claims. You can unarchive later. Items will not be deleted.
+                </p>
+                {!showArchiveConfirm ? (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowDeleteConfirm(false)}
-                    disabled={isDeleting}
-                    className="rounded-lg"
+                    onClick={() => setShowArchiveConfirm(true)}
+                    className="rounded-lg border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
                   >
-                    Cancel
+                    <Archive className="w-3.5 h-3.5 mr-1.5" />
+                    Archive
                   </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowArchiveConfirm(false)}
+                      disabled={isArchiving}
+                      className="rounded-lg"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleArchive}
+                      disabled={isArchiving}
+                      className="rounded-lg border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                    >
+                      {isArchiving ? (
+                        <>
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          Archiving...
+                        </>
+                      ) : (
+                        "Yes, Archive"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Delete section */}
+          {!wishlist.is_archived && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+              <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-destructive text-sm">Delete Wishlist</h4>
+                <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+                  This will permanently remove all items.
+                </p>
+                {!showDeleteConfirm ? (
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
+                    onClick={() => setShowDeleteConfirm(true)}
                     className="rounded-lg"
                   >
-                    {isDeleting ? (
-                      <>
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        Deleting...
-                      </>
-                    ) : (
-                      "Yes, Delete"
-                    )}
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                    Delete
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting}
+                      className="rounded-lg"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="rounded-lg"
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        "Yes, Delete"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

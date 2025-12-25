@@ -1,5 +1,5 @@
 import { Lock, Users, UserCheck } from "lucide-react";
-import type { WishlistPrivacy } from "@/lib/supabase/types";
+import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 export const PRIVACY_OPTIONS: {
   value: WishlistPrivacy;

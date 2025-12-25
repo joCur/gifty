@@ -3,9 +3,37 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "./helpers";
 import { revalidatePath } from "next/cache";
-import type { WishlistPrivacy } from "@/lib/supabase/types";
+import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
-export async function getMyWishlists() {
+/**
+ * Helper: Verify user owns the wishlist
+ */
+async function verifyWishlistOwnership(
+  supabase: any,
+  userId: string,
+  wishlistId: string,
+  additionalFields?: string
+): Promise<{ wishlist: any } | { error: string }> {
+  const selectFields = additionalFields ? `user_id, ${additionalFields}` : "user_id";
+
+  const { data: wishlist, error: fetchError } = await supabase
+    .from("wishlists")
+    .select(selectFields)
+    .eq("id", wishlistId)
+    .single();
+
+  if (fetchError) {
+    return { error: "Wishlist not found" };
+  }
+
+  if (!wishlist || wishlist.user_id !== userId) {
+    return { error: "Not authorized" };
+  }
+
+  return { wishlist };
+}
+
+export async function getMyWishlists(archived: boolean = false) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -22,6 +50,7 @@ export async function getMyWishlists() {
     `
     )
     .eq("user_id", user.id)
+    .eq("is_archived", archived)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -103,14 +132,9 @@ export async function updateWishlist(id: string, formData: FormData) {
     const { supabase, user } = await requireAuth();
 
     // Verify ownership
-    const { data: wishlist } = await supabase
-      .from("wishlists")
-      .select("user_id")
-      .eq("id", id)
-      .single();
-
-    if (!wishlist || wishlist.user_id !== user.id) {
-      return { error: "Not authorized" };
+    const verification = await verifyWishlistOwnership(supabase, user.id, id);
+    if ("error" in verification) {
+      return verification;
     }
 
     const name = formData.get("name") as string;
@@ -151,14 +175,9 @@ export async function deleteWishlist(id: string) {
     const { supabase, user } = await requireAuth();
 
     // Verify ownership
-    const { data: wishlist } = await supabase
-      .from("wishlists")
-      .select("user_id")
-      .eq("id", id)
-      .single();
-
-    if (!wishlist || wishlist.user_id !== user.id) {
-      return { error: "Not authorized" };
+    const verification = await verifyWishlistOwnership(supabase, user.id, id);
+    if ("error" in verification) {
+      return verification;
     }
 
     const { error } = await supabase.from("wishlists").delete().eq("id", id);
@@ -170,6 +189,83 @@ export async function deleteWishlist(id: string) {
     revalidatePath("/dashboard");
     return { success: true };
   } catch {
+    return { error: "Not authenticated" };
+  }
+}
+
+export async function archiveWishlist(id: string) {
+  try {
+    const { supabase, user } = await requireAuth();
+
+    // Verify ownership and get wishlist details
+    const verification = await verifyWishlistOwnership(supabase, user.id, id, "name, is_archived");
+    if ("error" in verification) {
+      return verification;
+    }
+
+    const { wishlist } = verification;
+
+    if (wishlist.is_archived) {
+      return { error: "Wishlist is already archived" };
+    }
+
+    // Update wishlist to archived
+    // Database trigger will handle claim deletion and notifications
+    const { error: updateError } = await supabase
+      .from("wishlists")
+      .update({ is_archived: true })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Error archiving wishlist:", updateError);
+      return { error: "Failed to archive wishlist" };
+    }
+
+    // Revalidate relevant paths
+    revalidatePath("/wishlists", "layout");
+    revalidatePath(`/wishlists/${id}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error archiving wishlist:", error);
+    return { error: "Not authenticated" };
+  }
+}
+
+export async function unarchiveWishlist(id: string) {
+  try {
+    const { supabase, user } = await requireAuth();
+
+    // Verify ownership and get wishlist details
+    const verification = await verifyWishlistOwnership(supabase, user.id, id, "is_archived");
+    if ("error" in verification) {
+      return verification;
+    }
+
+    const { wishlist } = verification;
+
+    if (!wishlist.is_archived) {
+      return { error: "Wishlist is not archived" };
+    }
+
+    // Update wishlist to active
+    const { error: updateError } = await supabase
+      .from("wishlists")
+      .update({ is_archived: false })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Error unarchiving wishlist:", updateError);
+      return { error: "Failed to unarchive wishlist" };
+    }
+
+    // Revalidate relevant paths
+    revalidatePath("/wishlists", "layout");
+    revalidatePath(`/wishlists/${id}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error unarchiving wishlist:", error);
     return { error: "Not authenticated" };
   }
 }

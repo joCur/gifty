@@ -3,9 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { requireAuth, type AuthenticatedClient } from "./helpers";
-import type { SplitClaimWithParticipants } from "@/lib/supabase/types";
+import type { SplitClaimWithParticipants } from "@/lib/supabase/types.custom";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/types.custom";
 
 // Constants
 const MIN_SPLIT_PARTICIPANTS = 2;

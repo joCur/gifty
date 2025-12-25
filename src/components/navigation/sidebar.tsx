@@ -6,7 +6,7 @@ import { Gift, Users, User, Home, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import type { ProfileWithEmail } from "@/lib/supabase/types";
+import type { ProfileWithEmail } from "@/lib/supabase/types.custom";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },

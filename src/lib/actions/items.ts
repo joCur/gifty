@@ -47,15 +47,19 @@ export async function addItem(wishlistId: string, formData: FormData) {
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist
+    // Verify user owns the wishlist and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
-      .select("user_id")
+      .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
     if (!wishlist || wishlist.user_id !== user.id) {
       return { error: "Not authorized" };
+    }
+
+    if (wishlist.is_archived) {
+      return { error: "Cannot add items to archived wishlist" };
     }
 
     const url = (formData.get("url") as string) || null;
@@ -150,15 +154,19 @@ export async function updateItem(
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist
+    // Verify user owns the wishlist and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
-      .select("user_id")
+      .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
     if (!wishlist || wishlist.user_id !== user.id) {
       return { error: "Not authorized" };
+    }
+
+    if (wishlist.is_archived) {
+      return { error: "Cannot update items in archived wishlist" };
     }
 
     const title = formData.get("title") as string;
@@ -266,15 +274,19 @@ export async function deleteItem(itemId: string, wishlistId: string) {
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist
+    // Verify user owns the wishlist and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
-      .select("user_id")
+      .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
     if (!wishlist || wishlist.user_id !== user.id) {
       return { error: "Not authorized" };
+    }
+
+    if (wishlist.is_archived) {
+      return { error: "Cannot delete items from archived wishlist" };
     }
 
     // Get item to clean up custom image if exists
@@ -313,15 +325,19 @@ export async function markItemPurchased(
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist
+    // Verify user owns the wishlist and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
-      .select("user_id")
+      .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
     if (!wishlist || wishlist.user_id !== user.id) {
       return { error: "Not authorized" };
+    }
+
+    if (wishlist.is_archived) {
+      return { error: "Cannot modify items in archived wishlist" };
     }
 
     const { error } = await supabase

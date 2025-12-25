@@ -17,7 +17,7 @@ import {
   getFriendsWithSelectionState,
   updateWishlistSelectedFriends,
 } from "@/lib/actions/wishlist-visibility";
-import type { SelectableFriend } from "@/lib/supabase/types";
+import type { SelectableFriend } from "@/lib/supabase/types.custom";
 import { getInitials } from "@/lib/utils";
 
 interface FriendPickerDialogProps {

@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { createWishlist } from "@/lib/actions/wishlists";
 import { toast } from "sonner";
 import { Loader2, Lock, Users, UserCheck, Gift, Sparkles, Check } from "lucide-react";
-import type { WishlistPrivacy } from "@/lib/supabase/types";
+import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 const privacyOptions: {
   value: WishlistPrivacy;

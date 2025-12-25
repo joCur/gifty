@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Plus, Lock, Users, UserCheck, Gift, Sparkles, ChevronRight } from "lucide-react";
+import { Plus, Lock, Users, UserCheck, Gift, Sparkles, ChevronRight, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMyWishlists } from "@/lib/actions/wishlists";
 import { CreateWishlistDialog } from "@/components/wishlists/create-wishlist-dialog";
-import type { WishlistPrivacy } from "@/lib/supabase/types";
+import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 const privacyConfig: Record<WishlistPrivacy, { icon: React.ReactNode; label: string; color: string }> = {
   private: {
@@ -40,9 +40,18 @@ export default async function WishlistsPage() {
           <h1 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold">
             My Wishlists
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {wishlists.length} {wishlists.length === 1 ? "wishlist" : "wishlists"} total
-          </p>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-sm text-muted-foreground">
+              {wishlists.length} active {wishlists.length === 1 ? "wishlist" : "wishlists"}
+            </p>
+            <Link
+              href="/wishlists/archived"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+            >
+              <Archive className="w-3.5 h-3.5" />
+              View archived
+            </Link>
+          </div>
         </div>
         <CreateWishlistDialog>
           <Button className="rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all hover:-translate-y-0.5">

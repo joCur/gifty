@@ -1,3 +1,4 @@
+Connecting to db 5432
 export type Json =
   | string
   | number
@@ -534,6 +535,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_archived: boolean
           name: string
           privacy: Database["public"]["Enums"]["wishlist_privacy"]
           updated_at: string
@@ -543,6 +545,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
           name: string
           privacy?: Database["public"]["Enums"]["wishlist_privacy"]
           updated_at?: string
@@ -552,6 +555,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_archived?: boolean
           name?: string
           privacy?: Database["public"]["Enums"]["wishlist_privacy"]
           updated_at?: string
@@ -644,6 +648,7 @@ export type Database = {
         | "item_flagged_already_owned"
         | "flag_confirmed"
         | "flag_denied"
+        | "wishlist_archived"
       ownership_flag_status: "pending" | "confirmed" | "denied"
       split_claim_status: "pending" | "confirmed"
       wishlist_privacy: "public" | "friends" | "private" | "selected_friends"
@@ -792,6 +797,7 @@ export const Constants = {
         "item_flagged_already_owned",
         "flag_confirmed",
         "flag_denied",
+        "wishlist_archived",
       ],
       ownership_flag_status: ["pending", "confirmed", "denied"],
       split_claim_status: ["pending", "confirmed"],

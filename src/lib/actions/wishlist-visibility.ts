@@ -2,7 +2,7 @@
 
 import { requireAuth } from "./helpers";
 import { revalidatePath } from "next/cache";
-import type { SelectableFriend } from "@/lib/supabase/types";
+import type { SelectableFriend } from "@/lib/supabase/types.custom";
 
 /**
  * Get all friends with their selection state for a wishlist

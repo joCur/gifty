@@ -23,7 +23,7 @@ import {
 import { deleteItem, markItemPurchased } from "@/lib/actions/items";
 import { confirmOwnershipFlag, denyOwnershipFlag } from "@/lib/actions/ownership-flags";
 import { toast } from "sonner";
-import type { WishlistItem } from "@/lib/supabase/types";
+import type { WishlistItem } from "@/lib/supabase/types.custom";
 import { EditItemDialog } from "./edit-item-dialog";
 
 interface OwnershipFlag {
@@ -38,6 +38,7 @@ interface WishlistItemCardProps {
   item: WishlistItem;
   wishlistId: string;
   isOwner: boolean;
+  isArchived?: boolean;
   showClaimStatus?: boolean;
   isClaimed?: boolean;
   onClaim?: () => void;
@@ -49,6 +50,7 @@ export function WishlistItemCard({
   item,
   wishlistId,
   isOwner,
+  isArchived = false,
   showClaimStatus = false,
   isClaimed = false,
   onClaim,
@@ -63,7 +65,7 @@ export function WishlistItemCard({
   async function handleDelete() {
     setIsDeleting(true);
     const result = await deleteItem(item.id, wishlistId);
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
     } else {
       toast.success("Item removed");
@@ -73,7 +75,7 @@ export function WishlistItemCard({
 
   async function handleTogglePurchased() {
     const result = await markItemPurchased(item.id, wishlistId, !item.is_purchased);
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
     }
   }
@@ -84,7 +86,7 @@ export function WishlistItemCard({
     setIsDeleting(true);
     const result = await confirmOwnershipFlag(ownershipFlag.id, item.id);
 
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
     } else {
       toast.success("Item archived - you already own it");
@@ -99,7 +101,7 @@ export function WishlistItemCard({
     setIsDeleting(true);
     const result = await denyOwnershipFlag(ownershipFlag.id, item.id);
 
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
     } else {
       toast.success("Confirmed - you still want this");
@@ -173,7 +175,7 @@ export function WishlistItemCard({
               </a>
             </Button>
           )}
-          {isOwner && (
+          {isOwner && !isArchived && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

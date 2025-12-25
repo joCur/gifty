@@ -3,7 +3,7 @@ import { Gift, Plus, ChevronRight, Lock, Users, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateWishlistDialog } from "@/components/wishlists/create-wishlist-dialog";
 import type { WishlistPreview } from "@/lib/types/feed";
-import type { WishlistPrivacy } from "@/lib/supabase/types";
+import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 interface MyWishlistsPreviewProps {
   wishlists: WishlistPreview[];

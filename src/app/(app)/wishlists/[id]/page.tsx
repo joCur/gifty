@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft, Plus, Settings, Gift, Lock, Users, UserCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Settings, Gift, Lock, Users, UserCheck, Sparkles, Archive, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getWishlist } from "@/lib/actions/wishlists";
@@ -8,7 +8,8 @@ import { getUser } from "@/lib/supabase/auth";
 import { WishlistItemCard } from "@/components/wishlists/wishlist-item-card";
 import { AddItemSheet } from "@/components/wishlists/add-item-sheet";
 import { WishlistSettingsSheet } from "@/components/wishlists/wishlist-settings-sheet";
-import type { WishlistPrivacy } from "@/lib/supabase/types";
+import { UnarchiveButton } from "@/components/wishlists/unarchive-button";
+import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 const privacyConfig: Record<
   WishlistPrivacy,
@@ -56,6 +57,7 @@ export default async function WishlistPage({
   const isOwner = user?.id === wishlist.user_id;
   const items = wishlist.items || [];
   const privacy = privacyConfig[wishlist.privacy];
+  const isArchived = wishlist.is_archived;
 
   // Map ownership flags to items (only pending flags for owner)
   const ownershipFlagsMap = new Map(
@@ -66,6 +68,24 @@ export default async function WishlistPage({
 
   return (
     <div className="space-y-8 lg:space-y-10">
+      {/* Archived Banner */}
+      {isOwner && isArchived && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-amber-900 dark:text-amber-100 text-sm">
+                This wishlist is archived
+              </h3>
+              <p className="text-xs text-amber-800/80 dark:text-amber-200/80 mt-1">
+                It's hidden from friends and cannot be edited. Unarchive it to make changes.
+              </p>
+            </div>
+            <UnarchiveButton wishlistId={wishlist.id} wishlistName={wishlist.name} />
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col gap-6">
         {/* Back button */}
@@ -112,7 +132,7 @@ export default async function WishlistPage({
           </div>
 
           {/* Actions */}
-          {isOwner && (
+          {isOwner && !isArchived && (
             <div className="flex items-center gap-2">
               <AddItemSheet wishlistId={wishlist.id}>
                 <Button className="rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all hover:-translate-y-0.5">
@@ -120,6 +140,23 @@ export default async function WishlistPage({
                   Add Item
                 </Button>
               </AddItemSheet>
+              <WishlistSettingsSheet wishlist={wishlist}>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="rounded-xl h-10 w-10"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </WishlistSettingsSheet>
+            </div>
+          )}
+          {isOwner && isArchived && (
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                <Archive className="w-3.5 h-3.5" />
+                Archived
+              </span>
               <WishlistSettingsSheet wishlist={wishlist}>
                 <Button
                   size="icon"
@@ -146,10 +183,12 @@ export default async function WishlistPage({
             </h3>
             <p className="text-muted-foreground mb-8">
               {isOwner
-                ? "Add items by pasting a link to something you'd love to receive. We'll fetch the details automatically!"
+                ? isArchived
+                  ? "This archived wishlist has no items. Unarchive it to add items."
+                  : "Add items by pasting a link to something you'd love to receive. We'll fetch the details automatically!"
                 : "This wishlist is empty. Check back later!"}
             </p>
-            {isOwner && (
+            {isOwner && !isArchived && (
               <AddItemSheet wishlistId={wishlist.id}>
                 <Button
                   size="lg"
@@ -170,6 +209,7 @@ export default async function WishlistPage({
               item={item}
               wishlistId={wishlist.id}
               isOwner={isOwner}
+              isArchived={isArchived}
               ownershipFlag={ownershipFlagsMap.get(item.id) || null}
             />
           ))}

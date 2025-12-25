@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/lib/actions/profile";
 import { toast } from "sonner";
 import { Loader2, User, Cake, Check } from "lucide-react";
-import type { Profile } from "@/lib/supabase/types";
+import type { Profile } from "@/lib/supabase/types.custom";
 
 export function ProfileForm({ profile }: { profile: Profile | null }) {
   const [isLoading, setIsLoading] = useState(false);
