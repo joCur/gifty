@@ -76,7 +76,7 @@ export function WishlistSettingsSheet({
   const loadSelectedFriends = useCallback(async () => {
     if (wishlist.privacy === "selected_friends") {
       const result = await getFriendsWithSelectionState(wishlist.id);
-      if (!result.error && result.data) {
+      if ("data" in result && result.data) {
         setSelectedFriendIds(
           result.data.filter((f) => f.isSelected).map((f) => f.id)
         );
@@ -107,7 +107,7 @@ export function WishlistSettingsSheet({
 
     const result = await updateWishlist(wishlist.id, formData);
 
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
       setIsUpdating(false);
       return;
@@ -119,7 +119,7 @@ export function WishlistSettingsSheet({
         wishlist.id,
         selectedFriendIds
       );
-      if (friendsResult.error) {
+      if ("error" in friendsResult) {
         toast.error(friendsResult.error);
         setIsUpdating(false);
         return;
@@ -135,7 +135,7 @@ export function WishlistSettingsSheet({
     setIsDeleting(true);
     const result = await deleteWishlist(wishlist.id);
 
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
       setIsDeleting(false);
     } else {
@@ -148,7 +148,7 @@ export function WishlistSettingsSheet({
     setIsArchiving(true);
     const result = await archiveWishlist(wishlist.id);
 
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
       setIsArchiving(false);
       setShowArchiveConfirm(false);
@@ -165,7 +165,7 @@ export function WishlistSettingsSheet({
     setIsArchiving(true);
     const result = await unarchiveWishlist(wishlist.id);
 
-    if (result.error) {
+    if ("error" in result) {
       toast.error(result.error);
       setIsArchiving(false);
     } else {
