@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getSplitClaimForItem } from "./split-claims";
+import { recordClaimHistoryEvent } from "./claim-history";
 
 export async function getItemClaims(wishlistId: string) {
   const supabase = await createClient();
@@ -33,7 +34,8 @@ export async function getItemClaims(wishlistId: string) {
       claimer:profiles!item_claims_claimed_by_fkey(id, display_name)
     `
     )
-    .in("item_id", itemIds);
+    .in("item_id", itemIds)
+    .eq("status", "active");
 
   if (error) {
     console.error("Error fetching claims:", error);
@@ -64,12 +66,13 @@ export async function claimItem(itemId: string, wishlistId: string) {
     return { error: "Cannot claim items on your own wishlist" };
   }
 
-  // Check if already claimed
+  // Check if already claimed (only active claims)
   const { data: existingClaim } = await supabase
     .from("item_claims")
     .select("id, claimed_by")
     .eq("item_id", itemId)
-    .single();
+    .eq("status", "active")
+    .maybeSingle();
 
   if (existingClaim) {
     if (existingClaim.claimed_by === user.id) {
@@ -99,16 +102,29 @@ export async function claimItem(itemId: string, wishlistId: string) {
     return { error: "The owner already has this item" };
   }
 
-  const { error } = await supabase.from("item_claims").insert({
-    item_id: itemId,
-    claimed_by: user.id,
-  });
+  const { data: newClaim, error } = await supabase
+    .from("item_claims")
+    .insert({
+      item_id: itemId,
+      claimed_by: user.id,
+      status: "active",
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return { error: error.message };
   }
 
+  // Record history event
+  await recordClaimHistoryEvent("claimed", newClaim.id, undefined, {
+    item_id: itemId,
+    wishlist_id: wishlistId,
+  });
+
   revalidatePath(`/friends`);
+  revalidatePath(`/dashboard`);
+  revalidatePath(`/claims-history`);
   return { success: true };
 }
 
@@ -122,16 +138,34 @@ export async function unclaimItem(itemId: string) {
     return { error: "Not authenticated" };
   }
 
-  const { error } = await supabase
+  // Soft delete: update status to 'cancelled' instead of deleting
+  const { data: updatedClaim, error } = await supabase
     .from("item_claims")
-    .delete()
+    .update({
+      status: "cancelled",
+      cancelled_at: new Date().toISOString(),
+    })
     .eq("item_id", itemId)
-    .eq("claimed_by", user.id);
+    .eq("claimed_by", user.id)
+    .eq("status", "active")
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     return { error: error.message };
   }
 
+  if (!updatedClaim) {
+    return { error: "No active claim found for this item" };
+  }
+
+  // Record history event
+  await recordClaimHistoryEvent("cancelled", updatedClaim.id, undefined, {
+    item_id: itemId,
+  });
+
   revalidatePath(`/friends`);
+  revalidatePath(`/dashboard`);
+  revalidatePath(`/claims-history`);
   return { success: true };
 }

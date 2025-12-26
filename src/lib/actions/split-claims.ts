@@ -2,7 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { requireAuth, type AuthenticatedClient } from "./helpers";
+import { requireAuth } from "./helpers";
+import { recordClaimHistoryEvent } from "./claim-history";
 import type { SplitClaimWithParticipants } from "@/lib/supabase/types.custom";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types.custom";
@@ -89,6 +90,7 @@ export async function getSplitClaimsForWishlist(
     .from("split_claims")
     .select(SPLIT_CLAIM_SELECT)
     .in("item_id", itemIds)
+    .eq("claim_status", "active")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -116,6 +118,7 @@ export async function getSplitClaimForItem(
     .from("split_claims")
     .select(SPLIT_CLAIM_SELECT)
     .eq("item_id", itemId)
+    .eq("claim_status", "active")
     .maybeSingle();
 
   if (error) {
@@ -151,22 +154,24 @@ export async function initiateSplitClaim(
     const ownerCheck = await verifyNotWishlistOwner(supabase, wishlistId, user.id);
     if (ownerCheck.error) return ownerCheck;
 
-    // Check if already claimed (solo) - use maybeSingle for 0-or-1 results
+    // Check if already claimed (solo) - only active claims
     const { data: existingSoloClaim } = await supabase
       .from("item_claims")
       .select("id")
       .eq("item_id", itemId)
+      .eq("status", "active")
       .maybeSingle();
 
     if (existingSoloClaim) {
       return { error: "This item already has a solo claim" };
     }
 
-    // Check if already has a split claim
+    // Check if already has an active split claim
     const { data: existingSplitClaim } = await supabase
       .from("split_claims")
       .select("id")
       .eq("item_id", itemId)
+      .eq("claim_status", "active")
       .maybeSingle();
 
     if (existingSplitClaim) {
@@ -196,6 +201,7 @@ export async function initiateSplitClaim(
         initiated_by: user.id,
         target_participants: targetParticipants,
         status: "pending",
+        claim_status: "active",
       })
       .select()
       .single();
@@ -218,7 +224,16 @@ export async function initiateSplitClaim(
       return { error: participantError.message };
     }
 
+    // Record history event
+    await recordClaimHistoryEvent("joined_split", undefined, splitClaim.id, {
+      item_id: itemId,
+      wishlist_id: wishlistId,
+      is_initiator: true,
+    });
+
     revalidatePath(`/friends`);
+    revalidatePath(`/dashboard`);
+    revalidatePath(`/claims-history`);
     return { success: true, data: splitClaim };
   } catch {
     return { error: "Not authenticated" };
@@ -236,15 +251,19 @@ export async function joinSplitClaim(splitClaimId: string, wishlistId: string) {
     const ownerCheck = await verifyNotWishlistOwner(supabase, wishlistId, user.id);
     if (ownerCheck.error) return ownerCheck;
 
-    // Check if split claim exists and is pending
+    // Check if split claim exists, is pending, and is active
     const { data: splitClaim } = await supabase
       .from("split_claims")
-      .select("id, status, target_participants")
+      .select("id, item_id, status, claim_status, target_participants")
       .eq("id", splitClaimId)
       .maybeSingle();
 
     if (!splitClaim) {
       return { error: "Split claim not found" };
+    }
+
+    if (splitClaim.claim_status !== "active") {
+      return { error: "Split claim is no longer active" };
     }
 
     if (splitClaim.status !== "pending") {
@@ -280,7 +299,16 @@ export async function joinSplitClaim(splitClaimId: string, wishlistId: string) {
       return { error: error.message };
     }
 
+    // Record history event
+    await recordClaimHistoryEvent("joined_split", undefined, splitClaimId, {
+      item_id: splitClaim.item_id,
+      wishlist_id: wishlistId,
+      is_initiator: false,
+    });
+
     revalidatePath(`/friends`);
+    revalidatePath(`/dashboard`);
+    revalidatePath(`/claims-history`);
     return { success: true };
   } catch {
     return { error: "Not authenticated" };
@@ -297,7 +325,7 @@ export async function leaveSplitClaim(splitClaimId: string) {
     // Check if split claim exists and is pending
     const { data: splitClaim } = await supabase
       .from("split_claims")
-      .select("id, status, initiated_by")
+      .select("id, item_id, status, claim_status, initiated_by")
       .eq("id", splitClaimId)
       .maybeSingle();
 
@@ -305,26 +333,41 @@ export async function leaveSplitClaim(splitClaimId: string) {
       return { error: "Split claim not found" };
     }
 
+    if (splitClaim.claim_status !== "active") {
+      return { error: "Split claim is no longer active" };
+    }
+
     if (splitClaim.status !== "pending") {
       return { error: "Cannot leave a confirmed split claim" };
     }
 
-    // If initiator is leaving, delete entire split claim (cascades to participants)
+    // If initiator is leaving, soft-delete entire split claim
     if (splitClaim.initiated_by === user.id) {
       const { error } = await supabase
         .from("split_claims")
-        .delete()
+        .update({
+          claim_status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+        })
         .eq("id", splitClaimId);
 
       if (error) {
         return { error: error.message };
       }
 
+      // Record history event for split cancellation
+      await recordClaimHistoryEvent("split_cancelled", undefined, splitClaimId, {
+        item_id: splitClaim.item_id,
+        cancelled_by_initiator: true,
+      });
+
       revalidatePath(`/friends`);
+      revalidatePath(`/dashboard`);
+      revalidatePath(`/claims-history`);
       return { success: true, cancelled: true };
     }
 
-    // Otherwise, just remove participant
+    // Otherwise, participant leaving (still hard delete for participants, but record event)
     const { error } = await supabase
       .from("split_claim_participants")
       .delete()
@@ -335,7 +378,14 @@ export async function leaveSplitClaim(splitClaimId: string) {
       return { error: error.message };
     }
 
+    // Record history event for leaving split
+    await recordClaimHistoryEvent("left_split", undefined, splitClaimId, {
+      item_id: splitClaim.item_id,
+    });
+
     revalidatePath(`/friends`);
+    revalidatePath(`/dashboard`);
+    revalidatePath(`/claims-history`);
     return { success: true };
   } catch {
     return { error: "Not authenticated" };

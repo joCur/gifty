@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -69,18 +70,26 @@ export function ClaimedItemsSection() {
 
   return (
     <div className="bg-card border border-border/50 rounded-2xl p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/20 to-emerald-500/5 flex items-center justify-center">
-          <ShoppingBag className="w-5 h-5 text-emerald-600" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400/20 to-emerald-500/5 flex items-center justify-center">
+            <ShoppingBag className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <h2 className="font-[family-name:var(--font-outfit)] text-lg font-semibold">
+              My Claimed Gifts
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Gifts you&apos;re planning to give
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-[family-name:var(--font-outfit)] text-lg font-semibold">
-            My Claimed Gifts
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Gifts you&apos;re planning to give
-          </p>
-        </div>
+        <Link href="/claims-history">
+          <Button variant="ghost" size="sm" className="text-xs gap-1.5">
+            <History className="w-3.5 h-3.5" />
+            View all
+          </Button>
+        </Link>
       </div>
 
       <div className="space-y-4">

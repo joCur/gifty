@@ -34,6 +34,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      claim_history_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          item_claim_id: string | null
+          metadata: Json | null
+          split_claim_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          item_claim_id?: string | null
+          metadata?: Json | null
+          split_claim_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          item_claim_id?: string | null
+          metadata?: Json | null
+          split_claim_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_history_events_item_claim_id_fkey"
+            columns: ["item_claim_id"]
+            isOneToOne: false
+            referencedRelation: "item_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_history_events_split_claim_id_fkey"
+            columns: ["split_claim_id"]
+            isOneToOne: false
+            referencedRelation: "split_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_history_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -120,22 +172,28 @@ export type Database = {
       }
       item_claims: {
         Row: {
+          cancelled_at: string | null
           claimed_by: string
           created_at: string
           id: string
           item_id: string
+          status: Database["public"]["Enums"]["claim_status"]
         }
         Insert: {
+          cancelled_at?: string | null
           claimed_by: string
           created_at?: string
           id?: string
           item_id: string
+          status?: Database["public"]["Enums"]["claim_status"]
         }
         Update: {
+          cancelled_at?: string | null
           claimed_by?: string
           created_at?: string
           id?: string
           item_id?: string
+          status?: Database["public"]["Enums"]["claim_status"]
         }
         Relationships: [
           {
@@ -391,6 +449,8 @@ export type Database = {
       }
       split_claims: {
         Row: {
+          cancelled_at: string | null
+          claim_status: Database["public"]["Enums"]["claim_status"]
           confirmed_at: string | null
           created_at: string
           id: string
@@ -401,6 +461,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancelled_at?: string | null
+          claim_status?: Database["public"]["Enums"]["claim_status"]
           confirmed_at?: string | null
           created_at?: string
           id?: string
@@ -411,6 +473,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancelled_at?: string | null
+          claim_status?: Database["public"]["Enums"]["claim_status"]
           confirmed_at?: string | null
           created_at?: string
           id?: string
@@ -632,6 +696,7 @@ export type Database = {
       }
     }
     Enums: {
+      claim_status: "active" | "cancelled"
       friendship_status: "pending" | "accepted" | "declined"
       notification_type:
         | "friend_request_received"
@@ -781,6 +846,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      claim_status: ["active", "cancelled"],
       friendship_status: ["pending", "accepted", "declined"],
       notification_type: [
         "friend_request_received",
@@ -804,4 +870,3 @@ export const Constants = {
     },
   },
 } as const
-
