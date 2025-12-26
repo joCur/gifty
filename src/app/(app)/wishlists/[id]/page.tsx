@@ -78,17 +78,8 @@ export default async function WishlistPage({
 
   return (
     <div className="space-y-8 lg:space-y-10">
-      {/* TEMPORARY DEBUG - Check what's happening */}
-      <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-xs font-mono">
-        <div><strong>🔍 DEBUG (production):</strong></div>
-        <div>user exists: {String(!!user)}</div>
-        <div>user.id: {user?.id || 'NULL'}</div>
-        <div>wishlist.user_id: {wishlist.user_id || 'NULL'}</div>
-        <div>isOwner: {String(isOwner)}</div>
-        <div>isArchived: {String(isArchived)}</div>
-        <div>should show button: {String(isOwner && !isArchived)}</div>
-        <div className="mt-2 text-yellow-600">If button shows now but didn't before, there's something weird happening with rendering</div>
-      </div>
+      {/* Hidden user ID check to prevent Next.js optimization issues */}
+      <span className="hidden" aria-hidden="true">{user?.id}</span>
 
       {/* Archived Banner */}
       {isOwner && isArchived && (
