@@ -46,6 +46,7 @@ import { flagItemAsOwned } from "@/lib/actions/ownership-flags";
 import { toast } from "sonner";
 import type { WishlistItem, SplitClaimWithParticipants } from "@/lib/supabase/types.custom";
 import { getInitials } from "@/lib/utils";
+import { useAuth } from "@/components/providers/auth-provider";
 
 interface Claim {
   id: string;
@@ -68,7 +69,6 @@ interface FriendWishlistItemsProps {
   claimsMap: Map<string, Claim>;
   splitClaimsMap: Map<string, SplitClaimWithParticipants>;
   ownershipFlagsMap: Map<string, OwnershipFlag>;
-  currentUserId: string | undefined;
 }
 
 export function FriendWishlistItems({
@@ -77,8 +77,9 @@ export function FriendWishlistItems({
   claimsMap,
   splitClaimsMap,
   ownershipFlagsMap,
-  currentUserId,
 }: FriendWishlistItemsProps) {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const [localClaims, setLocalClaims] = useState(claimsMap);
   const [localSplitClaims, setLocalSplitClaims] = useState(splitClaimsMap);

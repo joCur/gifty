@@ -8,10 +8,9 @@ import type { ProfileWithEmail } from "@/lib/supabase/types.custom";
 
 interface TopHeaderProps {
   profile: ProfileWithEmail | null;
-  userId: string;
 }
 
-export function TopHeader({ profile, userId }: TopHeaderProps) {
+export function TopHeader({ profile }: TopHeaderProps) {
   return (
     <header className="lg:hidden sticky top-0 z-40 glass">
       <div className="px-4 sm:px-6">
@@ -25,7 +24,7 @@ export function TopHeader({ profile, userId }: TopHeaderProps) {
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <NotificationBell userId={userId} />
+            <NotificationBell />
             <Link href="/profile" className="group">
               <UserAvatar
                 avatarUrl={profile?.avatar_url}

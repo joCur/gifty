@@ -38,12 +38,12 @@ export default async function AppLayout({
 
       <div className="min-h-screen flex relative">
         {/* Desktop Sidebar */}
-        <Sidebar profile={profile} userId={user.id} />
+        <Sidebar profile={profile} />
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col min-h-screen pb-20 lg:pb-0">
           {/* Mobile/Tablet Header */}
-          <TopHeader profile={profile} userId={user.id} />
+          <TopHeader profile={profile} />
 
           {/* Page content */}
           <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

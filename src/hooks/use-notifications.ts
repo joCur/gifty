@@ -9,6 +9,7 @@ import {
   markAllNotificationsRead,
 } from "@/lib/actions/notifications";
 import type { NotificationWithActor } from "@/lib/supabase/types.custom";
+import { useAuth } from "@/components/providers/auth-provider";
 
 // Shared query for notification with relations
 const NOTIFICATION_SELECT = `
@@ -18,7 +19,9 @@ const NOTIFICATION_SELECT = `
   item:wishlist_items(id, title)
 `;
 
-export function useNotifications(userId: string | undefined) {
+export function useNotifications() {
+  const { user } = useAuth();
+  const userId = user?.id;
   const [notifications, setNotifications] = useState<NotificationWithActor[]>(
     []
   );

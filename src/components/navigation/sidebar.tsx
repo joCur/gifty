@@ -18,10 +18,9 @@ const navItems = [
 
 interface SidebarProps {
   profile: ProfileWithEmail | null;
-  userId: string;
 }
 
-export function Sidebar({ profile, userId }: SidebarProps) {
+export function Sidebar({ profile }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -37,7 +36,7 @@ export function Sidebar({ profile, userId }: SidebarProps) {
               Giftify
             </span>
           </Link>
-          <NotificationBell userId={userId} />
+          <NotificationBell />
         </div>
       </div>
 

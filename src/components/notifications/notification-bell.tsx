@@ -14,13 +14,9 @@ import {
 import { NotificationList } from "./notification-list";
 import { useNotifications } from "@/hooks/use-notifications";
 
-interface NotificationBellProps {
-  userId: string;
-}
-
-export function NotificationBell({ userId }: NotificationBellProps) {
+export function NotificationBell() {
   const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } =
-    useNotifications(userId);
+    useNotifications();
 
   return (
     <Sheet>
