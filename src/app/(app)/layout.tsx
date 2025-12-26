@@ -3,11 +3,7 @@ import { getUser, getProfile } from "@/lib/supabase/auth";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { TopHeader } from "@/components/navigation/top-header";
 import { Sidebar } from "@/components/navigation/sidebar";
-
-// Force dynamic rendering for all authenticated pages
-// This ensures user session is fetched fresh on every request, preventing
-// stale cached data in production builds (dev mode is always dynamic)
-export const dynamic = 'force-dynamic';
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 export default async function AppLayout({
   children,
@@ -23,7 +19,7 @@ export default async function AppLayout({
   const profile = await getProfile();
 
   return (
-    <>
+    <AuthProvider initialUser={user}>
       {/* Static background blobs */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-background">
         <div
@@ -58,6 +54,6 @@ export default async function AppLayout({
         {/* Mobile Bottom Nav */}
         <BottomNav />
       </div>
-    </>
+    </AuthProvider>
   );
 }
