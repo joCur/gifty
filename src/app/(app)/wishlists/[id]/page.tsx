@@ -104,7 +104,10 @@ export default async function WishlistPage({
         </Link>
 
         {/* Title row */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div
+          className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
+          key={`wishlist-header-${user?.id || 'anonymous'}`}
+        >
           <div className="flex items-start gap-4">
             {/* Icon */}
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
