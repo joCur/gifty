@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Gift, Users, Sparkles, ArrowRight, Heart, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AppLogo } from "@/components/ui/app-logo";
 import { getUser } from "@/lib/supabase/auth";
 import { redirect } from "next/navigation";
 
@@ -41,10 +42,7 @@ export default async function HomePage() {
       <header className="glass fixed top-0 left-0 right-0 z-50">
         <div className="container max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
-              <Gift className="w-5 h-5" />
-              <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
+            <AppLogo size="md" />
             <span className="font-[family-name:var(--font-outfit)] font-bold text-xl tracking-tight">
               Giftify
             </span>
@@ -295,9 +293,7 @@ export default async function HomePage() {
       <footer className="border-t py-8 px-4">
         <div className="container max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-              <Gift className="w-4 h-4" />
-            </div>
+            <AppLogo size="xs" showHoverEffect={false} />
             <span className="font-[family-name:var(--font-outfit)] font-semibold">Giftify</span>
           </div>
           <p className="text-sm text-muted-foreground">

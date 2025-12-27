@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Gift } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { AppLogo } from "@/components/ui/app-logo";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import type { ProfileWithEmail } from "@/lib/supabase/types.custom";
 
@@ -16,9 +16,7 @@ export function TopHeader({ profile }: TopHeaderProps) {
       <div className="px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
-              <Gift className="w-4 h-4" />
-            </div>
+            <AppLogo size="sm" />
             <span className="font-[family-name:var(--font-outfit)] font-semibold text-lg">
               Giftify
             </span>

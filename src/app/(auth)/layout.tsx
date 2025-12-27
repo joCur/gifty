@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gift } from "lucide-react";
+import { AppLogo } from "@/components/ui/app-logo";
 
 export default function AuthLayout({
   children,
@@ -38,10 +38,7 @@ export default function AuthLayout({
           {/* Logo and header */}
           <div className="flex flex-col items-center space-y-4">
             <Link href="/" className="group">
-              <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-xl shadow-primary/25 transition-transform group-hover:scale-105">
-                <Gift className="w-8 h-8" />
-                <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+              <AppLogo size="xl" className="shadow-xl" />
             </Link>
             <div className="text-center space-y-1">
               <h1 className="font-[family-name:var(--font-outfit)] text-3xl font-bold tracking-tight">

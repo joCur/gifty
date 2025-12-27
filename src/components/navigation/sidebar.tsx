@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gift, Users, User, Home, Ticket } from "lucide-react";
+import { Gift, Users, User, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { AppLogo } from "@/components/ui/app-logo";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import type { ProfileWithEmail } from "@/lib/supabase/types.custom";
 
@@ -12,7 +13,6 @@ const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/wishlists", label: "My Wishlists", icon: Gift },
   { href: "/friends", label: "Friends", icon: Users },
-  { href: "/invites", label: "Invites", icon: Ticket },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
@@ -29,9 +29,7 @@ export function Sidebar({ profile }: SidebarProps) {
       <div className="p-6 border-b border-border/50">
         <div className="flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
-              <Gift className="w-5 h-5" />
-            </div>
+            <AppLogo size="md" />
             <span className="font-[family-name:var(--font-outfit)] font-bold text-xl">
               Giftify
             </span>
