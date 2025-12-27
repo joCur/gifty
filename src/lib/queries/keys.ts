@@ -1,5 +1,3 @@
-import type { ClaimHistoryFilters } from "@/lib/types/claims";
-
 // Query key factory for type-safe TanStack Query cache management
 export const queryKeys = {
   dashboard: {
@@ -13,8 +11,7 @@ export const queryKeys = {
   },
   claims: {
     all: ["claims"] as const,
-    my: () => [...queryKeys.claims.all, "my"] as const,
-    history: (filters?: ClaimHistoryFilters) =>
-      [...queryKeys.claims.all, "history", filters] as const,
+    history: (limit?: number) =>
+      [...queryKeys.claims.all, "history", limit] as const,
   },
 } as const;

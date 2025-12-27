@@ -5,7 +5,7 @@ import { QuickStats } from "@/components/dashboard/quick-stats";
 import { BirthdaySection } from "@/components/dashboard/birthday-section";
 import { MyWishlistsPreview } from "@/components/dashboard/my-wishlists-preview";
 import { FriendsFeed } from "@/components/dashboard/friends-feed";
-import { ClaimedItemsSection } from "@/components/dashboard/claimed-items-section";
+import { RecentClaimsSection } from "@/components/dashboard/recent-claims-section";
 
 export default async function DashboardPage() {
   // Parallel SSR data fetching
@@ -61,8 +61,8 @@ export default async function DashboardPage() {
           {/* My Wishlists Preview */}
           <MyWishlistsPreview wishlists={wishlistsPreview} />
 
-          {/* My Claimed Items */}
-          <ClaimedItemsSection />
+          {/* Recent Claims */}
+          <RecentClaimsSection />
         </div>
       </div>
     </div>

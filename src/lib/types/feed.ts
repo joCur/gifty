@@ -65,31 +65,6 @@ export interface DashboardStats {
   claimed_items_count: number;
 }
 
-// Claimed item with wishlist context
-export interface ClaimedItem {
-  id: string;
-  title: string;
-  description: string | null;
-  image_url: string | null;
-  custom_image_url: string | null;
-  price: string | null;
-  currency: string | null;
-  url: string | null;
-  claimed_at: string;
-  wishlist_id: string;
-  wishlist_name: string;
-}
-
-// Claimed items grouped by friend
-export interface ClaimedItemGroup {
-  friend: {
-    id: string;
-    display_name: string | null;
-    avatar_url: string | null;
-  };
-  items: ClaimedItem[];
-}
-
 // Wishlist preview for dashboard
 export interface WishlistPreview {
   id: string;

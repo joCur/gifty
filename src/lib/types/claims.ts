@@ -72,12 +72,6 @@ export interface ClaimHistoryPeriod {
   claims: ClaimHistoryItem[];
 }
 
-// Filter options for history query
-export interface ClaimHistoryFilters {
-  status?: ClaimStatus[];
-  type?: ("solo" | "split")[];
-}
-
 // Full claim history response
 export interface ClaimHistoryResponse {
   periods: ClaimHistoryPeriod[];

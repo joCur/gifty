@@ -1,9 +1,9 @@
 import { History } from "lucide-react";
 import { ClaimHistoryList } from "@/components/claims/claim-history-list";
-import { getClaimHistoryGrouped } from "@/lib/actions/claim-history";
+import { getClaimHistory } from "@/lib/actions/claim-history";
 
 export default async function ClaimsHistoryPage() {
-  const history = await getClaimHistoryGrouped();
+  const history = await getClaimHistory();
 
   return (
     <div className="space-y-8 lg:space-y-10">
