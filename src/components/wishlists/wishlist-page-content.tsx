@@ -7,8 +7,11 @@ import { WishlistItemCard } from "@/components/wishlists/wishlist-item-card";
 import { AddItemSheet } from "@/components/wishlists/add-item-sheet";
 import { WishlistSettingsSheet } from "@/components/wishlists/wishlist-settings-sheet";
 import { UnarchiveButton } from "@/components/wishlists/unarchive-button";
+import { CollaboratorsSheet } from "@/components/wishlists/collaborators-sheet";
+import { ConvertToJointDialog } from "@/components/wishlists/convert-to-joint-dialog";
+import { JointWishlistBadge } from "@/components/wishlists/joint-wishlist-badge";
 import { useAuth } from "@/components/providers/auth-provider";
-import type { WishlistPrivacy, WishlistItem, Wishlist } from "@/lib/supabase/types.custom";
+import type { WishlistPrivacy, WishlistItem, Wishlist, CollaboratorWithProfile, Profile } from "@/lib/supabase/types.custom";
 
 const privacyConfig: Record<
   WishlistPrivacy,
@@ -44,9 +47,11 @@ interface OwnershipFlag {
   flagger: { id: string; display_name: string | null } | null;
 }
 
-// Extended wishlist type with items joined
+// Extended wishlist type with items and collaborators joined
 type WishlistWithItems = Wishlist & {
   items: WishlistItem[] | null;
+  owner?: Pick<Profile, "id" | "display_name" | "avatar_url"> | null;
+  collaborators?: CollaboratorWithProfile[] | null;
 };
 
 interface WishlistPageContentProps {
@@ -57,7 +62,12 @@ interface WishlistPageContentProps {
 export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageContentProps) {
   const { user } = useAuth();
 
-  const isOwner = user?.id === wishlist.user_id;
+  const isPrimaryOwner = user?.id === wishlist.user_id;
+  const collaborators = wishlist.collaborators || [];
+  const isCollaborator = collaborators.some((c) => c.user_id === user?.id);
+  const canEdit = isPrimaryOwner || isCollaborator;
+  const isJoint = wishlist.is_joint || collaborators.length > 0;
+
   const items = wishlist.items || [];
   const privacy = privacyConfig[wishlist.privacy];
   const isArchived = wishlist.is_archived;
@@ -72,7 +82,7 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
   return (
     <div className="space-y-8 lg:space-y-10">
       {/* Archived Banner */}
-      {isOwner && isArchived && (
+      {canEdit && isArchived && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
@@ -81,10 +91,14 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
                 This wishlist is archived
               </h3>
               <p className="text-xs text-amber-800/80 dark:text-amber-200/80 mt-1">
-                It&apos;s hidden from friends and cannot be edited. Unarchive it to make changes.
+                {isPrimaryOwner
+                  ? "It's hidden from friends and cannot be edited. Unarchive it to make changes."
+                  : "It's hidden from friends and cannot be edited. The primary owner can unarchive it."}
               </p>
             </div>
-            <UnarchiveButton wishlistId={wishlist.id} wishlistName={wishlist.name} />
+            {isPrimaryOwner && (
+              <UnarchiveButton wishlistId={wishlist.id} wishlistName={wishlist.name} />
+            )}
           </div>
         </div>
       )}
@@ -110,11 +124,14 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
 
             {/* Title and description */}
             <div className="min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold">
                   {wishlist.name}
                 </h1>
-                {isOwner && (
+                {isJoint && (
+                  <JointWishlistBadge collaboratorCount={collaborators.length} />
+                )}
+                {canEdit && (
                   <span
                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${privacy.color}`}
                   >
@@ -128,14 +145,24 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
                   {wishlist.description}
                 </p>
               )}
-              <p className="text-sm text-muted-foreground mt-2">
-                {items.length} {items.length === 1 ? "item" : "items"}
-              </p>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-2">
+                <span>{items.length} {items.length === 1 ? "item" : "items"}</span>
+                {isJoint && wishlist.owner && (
+                  <>
+                    <span>•</span>
+                    <span>
+                      {isPrimaryOwner
+                        ? `Shared with ${collaborators.length} ${collaborators.length === 1 ? "person" : "people"}`
+                        : `Owned by ${wishlist.owner.display_name || "Unknown"}`}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Actions */}
-          {isOwner && !isArchived && (
+          {canEdit && !isArchived && (
             <div className="flex items-center gap-2">
               <AddItemSheet wishlistId={wishlist.id}>
                 <Button className="rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all hover:-translate-y-0.5">
@@ -143,32 +170,79 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
                   Add Item
                 </Button>
               </AddItemSheet>
-              <WishlistSettingsSheet wishlist={wishlist}>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="rounded-xl h-10 w-10"
+              {isJoint && wishlist.owner && user && (
+                <CollaboratorsSheet
+                  wishlistId={wishlist.id}
+                  wishlistName={wishlist.name}
+                  owner={wishlist.owner}
+                  collaborators={collaborators}
+                  currentUserId={user.id}
+                  isPrimaryOwner={isPrimaryOwner}
+                  isArchived={isArchived}
                 >
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </WishlistSettingsSheet>
+                  <Button variant="outline" className="rounded-xl">
+                    <Users className="w-4 h-4 mr-2" />
+                    {1 + collaborators.length}
+                  </Button>
+                </CollaboratorsSheet>
+              )}
+              {isPrimaryOwner && !isJoint && (
+                <ConvertToJointDialog
+                  wishlistId={wishlist.id}
+                  wishlistName={wishlist.name}
+                >
+                  <Button variant="outline" className="rounded-xl">
+                    <Users className="w-4 h-4 mr-2" />
+                    Invite
+                  </Button>
+                </ConvertToJointDialog>
+              )}
+              {isPrimaryOwner && (
+                <WishlistSettingsSheet wishlist={wishlist} isPrimaryOwner={isPrimaryOwner}>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="rounded-xl h-10 w-10"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </WishlistSettingsSheet>
+              )}
             </div>
           )}
-          {isOwner && isArchived && (
+          {canEdit && isArchived && (
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                 <Archive className="w-3.5 h-3.5" />
                 Archived
               </span>
-              <WishlistSettingsSheet wishlist={wishlist}>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="rounded-xl h-10 w-10"
+              {isJoint && wishlist.owner && user && (
+                <CollaboratorsSheet
+                  wishlistId={wishlist.id}
+                  wishlistName={wishlist.name}
+                  owner={wishlist.owner}
+                  collaborators={collaborators}
+                  currentUserId={user.id}
+                  isPrimaryOwner={isPrimaryOwner}
+                  isArchived={isArchived}
                 >
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </WishlistSettingsSheet>
+                  <Button variant="outline" className="rounded-xl" size="sm">
+                    <Users className="w-4 h-4 mr-2" />
+                    {1 + collaborators.length}
+                  </Button>
+                </CollaboratorsSheet>
+              )}
+              {isPrimaryOwner && (
+                <WishlistSettingsSheet wishlist={wishlist} isPrimaryOwner={isPrimaryOwner}>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="rounded-xl h-10 w-10"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </WishlistSettingsSheet>
+              )}
             </div>
           )}
         </div>
@@ -185,13 +259,13 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
               No items yet
             </h3>
             <p className="text-muted-foreground mb-8">
-              {isOwner
+              {canEdit
                 ? isArchived
                   ? "This archived wishlist has no items. Unarchive it to add items."
                   : "Add items by pasting a link to something you'd love to receive. We'll fetch the details automatically!"
                 : "This wishlist is empty. Check back later!"}
             </p>
-            {isOwner && !isArchived && (
+            {canEdit && !isArchived && (
               <AddItemSheet wishlistId={wishlist.id}>
                 <Button
                   size="lg"
@@ -211,7 +285,7 @@ export function WishlistPageContent({ wishlist, ownershipFlags }: WishlistPageCo
               key={item.id}
               item={item}
               wishlistId={wishlist.id}
-              isOwner={isOwner}
+              isOwner={canEdit}
               isArchived={isArchived}
               ownershipFlag={ownershipFlagsMap.get(item.id) || null}
             />

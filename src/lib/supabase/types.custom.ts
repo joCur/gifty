@@ -18,6 +18,7 @@ export type Friendship = Database["public"]["Tables"]["friendships"]["Row"];
 export type ItemClaim = Database["public"]["Tables"]["item_claims"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type InviteCode = Database["public"]["Tables"]["invite_codes"]["Row"];
+export type WishlistCollaborator = Database["public"]["Tables"]["wishlist_collaborators"]["Row"];
 
 // Extended profile type with email from auth.users
 export type ProfileWithEmail = Profile & { email?: string };
@@ -37,6 +38,25 @@ export type SelectableFriend = {
   avatar_url: string | null;
   birthday: string | null;
   isSelected: boolean;
+};
+
+// Collaborator with profile data joined
+export type CollaboratorWithProfile = {
+  id: string;
+  user_id: string;
+  invited_at: string;
+  user: {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
+};
+
+// Wishlist with owner and collaborators joined
+export type WishlistWithCollaborators = Wishlist & {
+  owner: Pick<Profile, "id" | "display_name" | "avatar_url"> | null;
+  items: WishlistItem[] | null;
+  collaborators: CollaboratorWithProfile[] | null;
 };
 
 // Split claim with participants and profile data joined

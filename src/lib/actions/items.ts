@@ -47,14 +47,24 @@ export async function addItem(wishlistId: string, formData: FormData) {
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist and it's not archived
+    // Verify user can edit the wishlist (owner or collaborator) and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
       .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
-    if (!wishlist || wishlist.user_id !== user.id) {
+    if (!wishlist) {
+      return { error: "Wishlist not found" };
+    }
+
+    const isOwner = wishlist.user_id === user.id;
+    const { data: isCollab } = await supabase.rpc("is_wishlist_collaborator", {
+      target_wishlist_id: wishlistId,
+      target_user_id: user.id,
+    });
+
+    if (!isOwner && !isCollab) {
       return { error: "Not authorized" };
     }
 
@@ -154,14 +164,24 @@ export async function updateItem(
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist and it's not archived
+    // Verify user can edit the wishlist (owner or collaborator) and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
       .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
-    if (!wishlist || wishlist.user_id !== user.id) {
+    if (!wishlist) {
+      return { error: "Wishlist not found" };
+    }
+
+    const isOwner = wishlist.user_id === user.id;
+    const { data: isCollab } = await supabase.rpc("is_wishlist_collaborator", {
+      target_wishlist_id: wishlistId,
+      target_user_id: user.id,
+    });
+
+    if (!isOwner && !isCollab) {
       return { error: "Not authorized" };
     }
 
@@ -274,14 +294,24 @@ export async function deleteItem(itemId: string, wishlistId: string) {
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist and it's not archived
+    // Verify user can edit the wishlist (owner or collaborator) and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
       .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
-    if (!wishlist || wishlist.user_id !== user.id) {
+    if (!wishlist) {
+      return { error: "Wishlist not found" };
+    }
+
+    const isOwner = wishlist.user_id === user.id;
+    const { data: isCollab } = await supabase.rpc("is_wishlist_collaborator", {
+      target_wishlist_id: wishlistId,
+      target_user_id: user.id,
+    });
+
+    if (!isOwner && !isCollab) {
       return { error: "Not authorized" };
     }
 
@@ -325,14 +355,24 @@ export async function markItemPurchased(
   try {
     const { supabase, user } = await requireAuth();
 
-    // Verify user owns the wishlist and it's not archived
+    // Verify user can edit the wishlist (owner or collaborator) and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
       .select("user_id, is_archived")
       .eq("id", wishlistId)
       .single();
 
-    if (!wishlist || wishlist.user_id !== user.id) {
+    if (!wishlist) {
+      return { error: "Wishlist not found" };
+    }
+
+    const isOwner = wishlist.user_id === user.id;
+    const { data: isCollab } = await supabase.rpc("is_wishlist_collaborator", {
+      target_wishlist_id: wishlistId,
+      target_user_id: user.id,
+    });
+
+    if (!isOwner && !isCollab) {
       return { error: "Not authorized" };
     }
 

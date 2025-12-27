@@ -63,13 +63,13 @@ function DialogContent({
           // Base styles
           "bg-background fixed z-50 flex flex-col outline-none",
           // Mobile: Bottom sheet
-          "inset-x-0 bottom-0 max-h-[90vh] w-full rounded-t-3xl border-t border-x",
+          "inset-x-0 bottom-0 max-h-[90vh] w-full rounded-t-3xl border-t border-x px-5 pb-6",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
           "data-[state=closed]:duration-200 data-[state=open]:duration-300",
-          // Desktop: Centered dialog
+          // Desktop: Centered dialog with generous padding
           "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]",
-          "sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-2xl sm:border sm:shadow-xl sm:pt-6",
+          "sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-2xl sm:border sm:shadow-xl sm:px-6 sm:pb-6 sm:pt-6",
           "sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0",
           "sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0",
           "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
@@ -85,7 +85,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="hidden sm:flex ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-full p-1.5 opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:bg-muted items-center justify-center"
+            className="hidden sm:flex ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-5 right-5 rounded-full p-1.5 opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:bg-muted items-center justify-center"
           >
             <XIcon />
             <span className="sr-only">Close</span>

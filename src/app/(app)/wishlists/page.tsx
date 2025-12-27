@@ -3,6 +3,7 @@ import { Plus, Lock, Users, UserCheck, Gift, Sparkles, ChevronRight, Archive } f
 import { Button } from "@/components/ui/button";
 import { getMyWishlists } from "@/lib/actions/wishlists";
 import { CreateWishlistDialog } from "@/components/wishlists/create-wishlist-dialog";
+import { JointWishlistBadge } from "@/components/wishlists/joint-wishlist-badge";
 import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 const privacyConfig: Record<WishlistPrivacy, { icon: React.ReactNode; label: string; color: string }> = {
@@ -96,15 +97,20 @@ export default async function WishlistsPage() {
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   <div className="relative flex flex-col h-full">
-                    {/* Top row: Icon and privacy badge */}
+                    {/* Top row: Icon and badges */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Gift className="w-5 h-5 text-primary" />
                       </div>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${privacy.color}`}>
-                        {privacy.icon}
-                        {privacy.label}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {wishlist.is_joint && (
+                          <JointWishlistBadge />
+                        )}
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${privacy.color}`}>
+                          {privacy.icon}
+                          {privacy.label}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Content */}

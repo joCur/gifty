@@ -195,6 +195,7 @@ export async function getMyClaimedItems(): Promise<ClaimedItemGroup[]> {
     `
     )
     .eq("claimed_by", user.id)
+    .eq("status", "active")
     .order("created_at", { ascending: false });
 
   if (!claims || claims.length === 0) return [];

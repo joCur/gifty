@@ -56,9 +56,11 @@ const privacyOptions: {
 
 export function WishlistSettingsSheet({
   wishlist,
+  isPrimaryOwner = true,
   children,
 }: {
   wishlist: Wishlist;
+  isPrimaryOwner?: boolean;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -180,7 +182,7 @@ export function WishlistSettingsSheet({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader className="px-6">
+        <DialogHeader>
           <DialogTitle className="font-[family-name:var(--font-outfit)] flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Wishlist Settings
@@ -188,7 +190,7 @@ export function WishlistSettingsSheet({
           <DialogDescription>Update your wishlist details and privacy.</DialogDescription>
         </DialogHeader>
 
-        <form action={handleUpdate} className="px-6 pb-6 space-y-5">
+        <form action={handleUpdate} className="space-y-5">
           {/* Name field */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
@@ -282,8 +284,9 @@ export function WishlistSettingsSheet({
           </DialogFooter>
         </form>
 
-        {/* Danger zone */}
-        <div className="px-6 pb-6 pt-2 border-t border-border/50 space-y-4">
+        {/* Danger zone - only for primary owner */}
+        {isPrimaryOwner && (
+        <div className="-mx-5 sm:-mx-6 px-5 sm:px-6 pt-4 mt-2 border-t border-border/50 space-y-4">
           {/* Archive section */}
           {wishlist.is_archived ? (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
@@ -417,6 +420,7 @@ export function WishlistSettingsSheet({
             </div>
           )}
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );

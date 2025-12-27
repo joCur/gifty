@@ -501,6 +501,52 @@ export type Database = {
           },
         ]
       }
+      wishlist_collaborators: {
+        Row: {
+          id: string
+          invited_at: string
+          invited_by: string
+          user_id: string
+          wishlist_id: string
+        }
+        Insert: {
+          id?: string
+          invited_at?: string
+          invited_by: string
+          user_id: string
+          wishlist_id: string
+        }
+        Update: {
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          user_id?: string
+          wishlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_collaborators_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_collaborators_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_collaborators_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlist_items: {
         Row: {
           created_at: string
@@ -599,6 +645,7 @@ export type Database = {
           description: string | null
           id: string
           is_archived: boolean
+          is_joint: boolean
           name: string
           privacy: Database["public"]["Enums"]["wishlist_privacy"]
           updated_at: string
@@ -609,6 +656,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_archived?: boolean
+          is_joint?: boolean
           name: string
           privacy?: Database["public"]["Enums"]["wishlist_privacy"]
           updated_at?: string
@@ -619,6 +667,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_archived?: boolean
+          is_joint?: boolean
           name?: string
           privacy?: Database["public"]["Enums"]["wishlist_privacy"]
           updated_at?: string
@@ -643,6 +692,14 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
       }
+      can_edit_wishlist: {
+        Args: { target_user_id: string; target_wishlist_id: string }
+        Returns: boolean
+      }
+      can_view_split_claim_as_friend: {
+        Args: { target_split_claim_id: string; target_user_id: string }
+        Returns: boolean
+      }
       can_view_wishlist: {
         Args: { viewer_id: string; wishlist_id: string }
         Returns: boolean
@@ -659,6 +716,26 @@ export type Database = {
           wishlist_name: string
           wishlist_owner_id: string
         }[]
+      }
+      is_primary_owner: {
+        Args: { target_user_id: string; target_wishlist_id: string }
+        Returns: boolean
+      }
+      is_split_claim_initiator: {
+        Args: { target_split_claim_id: string; target_user_id: string }
+        Returns: boolean
+      }
+      is_split_claim_participant: {
+        Args: { target_split_claim_id: string; target_user_id: string }
+        Returns: boolean
+      }
+      is_split_claim_pending: {
+        Args: { target_split_claim_id: string }
+        Returns: boolean
+      }
+      is_wishlist_collaborator: {
+        Args: { target_user_id: string; target_wishlist_id: string }
+        Returns: boolean
       }
       notify_friends: {
         Args: {
@@ -713,6 +790,8 @@ export type Database = {
         | "flag_confirmed"
         | "flag_denied"
         | "wishlist_archived"
+        | "collaborator_invited"
+        | "collaborator_left"
       ownership_flag_status: "pending" | "confirmed" | "denied"
       split_claim_status: "pending" | "confirmed"
       wishlist_privacy: "public" | "friends" | "private" | "selected_friends"
@@ -863,6 +942,8 @@ export const Constants = {
         "flag_confirmed",
         "flag_denied",
         "wishlist_archived",
+        "collaborator_invited",
+        "collaborator_left",
       ],
       ownership_flag_status: ["pending", "confirmed", "denied"],
       split_claim_status: ["pending", "confirmed"],
@@ -870,3 +951,4 @@ export const Constants = {
     },
   },
 } as const
+

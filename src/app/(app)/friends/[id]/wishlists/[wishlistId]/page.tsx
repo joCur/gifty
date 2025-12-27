@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +7,7 @@ import { getItemClaims } from "@/lib/actions/claims";
 import { getSplitClaimsForWishlist } from "@/lib/actions/split-claims";
 import { getOwnershipFlags } from "@/lib/actions/ownership-flags";
 import { FriendWishlistItems } from "@/components/wishlists/friend-wishlist-items";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function FriendWishlistPage({
   params,
@@ -14,6 +15,11 @@ export default async function FriendWishlistPage({
   params: Promise<{ id: string; wishlistId: string }>;
 }) {
   const { id: friendId, wishlistId } = await params;
+
+  // Get current user
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const [wishlist, claims, splitClaims, ownershipFlags] = await Promise.all([
     getWishlist(wishlistId),
     getItemClaims(wishlistId),
@@ -23,6 +29,14 @@ export default async function FriendWishlistPage({
 
   if (!wishlist || wishlist.user_id !== friendId) {
     notFound();
+  }
+
+  // If current user is a collaborator on this wishlist, redirect to owner view
+  const collaborators = (wishlist as { collaborators?: { user_id: string }[] }).collaborators || [];
+  const isCollaborator = user && collaborators.some((c) => c.user_id === user.id);
+
+  if (isCollaborator) {
+    redirect(`/wishlists/${wishlistId}`);
   }
 
   const owner = wishlist.owner as {

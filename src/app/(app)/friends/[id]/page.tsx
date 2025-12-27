@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Gift, Calendar, ChevronRight, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Gift, Calendar, ChevronRight, Sparkles, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getFriendProfile, getFriendWishlists } from "@/lib/actions/friends";
@@ -121,21 +121,33 @@ export default async function FriendPage({
             {wishlists.map((wishlist) => {
               const itemCount =
                 (wishlist.items as unknown as { count: number }[])?.[0]?.count || 0;
+              const isCoOwner = (wishlist as { isCurrentUserCollaborator?: boolean }).isCurrentUserCollaborator;
+              // If co-owner, link to owner view; otherwise link to friend view
+              const href = isCoOwner
+                ? `/wishlists/${wishlist.id}`
+                : `/friends/${id}/wishlists/${wishlist.id}`;
+
               return (
                 <Link
                   key={wishlist.id}
-                  href={`/friends/${id}/wishlists/${wishlist.id}`}
+                  href={href}
                 >
                   <div className="group relative h-full bg-card border border-border/50 rounded-2xl p-5 hover:shadow-xl hover:shadow-primary/5 transition-all duration-200 hover:-translate-y-1">
                     {/* Hover gradient overlay */}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                     <div className="relative flex flex-col h-full">
-                      {/* Top row: Icon */}
+                      {/* Top row: Icon and co-owner badge */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <Gift className="w-5 h-5 text-primary" />
                         </div>
+                        {isCoOwner && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-violet-500/10 text-violet-600">
+                            <Users className="w-3 h-3" />
+                            Co-owner
+                          </span>
+                        )}
                       </div>
 
                       {/* Content */}

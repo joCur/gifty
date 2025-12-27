@@ -323,10 +323,12 @@ export async function getFriendWishlists(friendId: string) {
       `
       *,
       owner:profiles!wishlists_user_id_fkey(id, display_name, avatar_url),
-      items:wishlist_items(count)
+      items:wishlist_items(count),
+      collaborators:wishlist_collaborators(user_id)
     `
     )
     .eq("user_id", friendId)
+    .eq("is_archived", false)
     .in("privacy", ["friends", "selected_friends"])
     .order("created_at", { ascending: false });
 
@@ -335,7 +337,15 @@ export async function getFriendWishlists(friendId: string) {
     return [];
   }
 
-  return data || [];
+  // Add isCollaborator flag for current user
+  const wishlistsWithCollabStatus = (data || []).map((wishlist) => ({
+    ...wishlist,
+    isCurrentUserCollaborator: (wishlist.collaborators || []).some(
+      (c: { user_id: string }) => c.user_id === user.id
+    ),
+  }));
+
+  return wishlistsWithCollabStatus;
 }
 
 export async function getFriendProfile(friendId: string) {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Archive, Gift, ChevronRight, Lock, Users, UserCheck } from "lucide-react";
 import { getMyWishlists } from "@/lib/actions/wishlists";
 import { UnarchiveButton } from "@/components/wishlists/unarchive-button";
+import { JointWishlistBadge } from "@/components/wishlists/joint-wishlist-badge";
 import type { WishlistPrivacy } from "@/lib/supabase/types.custom";
 
 const privacyConfig: Record<WishlistPrivacy, { icon: React.ReactNode; label: string; color: string }> = {
@@ -107,12 +108,15 @@ export default async function ArchivedWishlistsPage() {
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-500/5 to-orange-500/5" />
 
                     <div className="relative flex flex-col h-full">
-                      {/* Top row: Icon and privacy badge */}
+                      {/* Top row: Icon and badges */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
                           <Gift className="w-5 h-5 text-muted-foreground" />
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          {wishlist.is_joint && (
+                            <JointWishlistBadge />
+                          )}
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${privacy.color}`}>
                             {privacy.icon}
                             {privacy.label}
