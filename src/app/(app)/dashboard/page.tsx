@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 import { getDashboardStats } from "@/lib/actions/stats";
 import { getUpcomingBirthdays, getMyWishlistsPreview } from "@/lib/actions/dashboard";
 import { QuickStats } from "@/components/dashboard/quick-stats";
@@ -35,22 +34,7 @@ export default async function DashboardPage() {
         {/* Main content column */}
         <div className="space-y-8 order-2 lg:order-1">
           {/* Friends' Recent Items Feed */}
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400/20 to-pink-500/10 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-rose-500" />
-              </div>
-              <div>
-                <h2 className="font-[family-name:var(--font-outfit)] text-lg font-semibold">
-                  Friends&apos; Wishlists
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  Recent items from your friends
-                </p>
-              </div>
-            </div>
-            <FriendsFeed />
-          </div>
+          <FriendsFeed />
         </div>
 
         {/* Sidebar column */}

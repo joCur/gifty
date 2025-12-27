@@ -51,6 +51,8 @@ src/
 │   └── providers/       # React Query provider
 ├── lib/
 │   ├── actions/         # Server actions (wishlists, friends, items, claims, profile, feed, etc.)
+│   ├── queries/         # TanStack Query hooks and key factories
+│   ├── types/           # TypeScript types (claims.ts, feed.ts)
 │   ├── supabase/        # Supabase client setup (server.ts, client.ts, middleware.ts, types.ts)
 │   └── utils.ts         # Utility functions (cn, getInitials, extractItemCount)
 └── middleware.ts        # Auth session management
@@ -67,11 +69,21 @@ Main tables with RLS policies:
 - `wishlists` - Wishlists with privacy settings (public/friends/private/selected_friends)
 - `wishlist_items` - Items in wishlists (url, title, price, etc.)
 - `friendships` - Friend relationships (pending/accepted/declined)
-- `item_claims` - Gift claims (hidden from wishlist owner)
+- `item_claims` - Gift claims with status: active/cancelled/fulfilled (soft deletes)
 - `split_claims` - For sharing gift costs with friends
+- `claim_history_events` - Audit log for claim lifecycle events
 - `notifications` - User notifications for friend requests, claims, etc.
 
 Key RLS behavior: Wishlist owners cannot see claims on their own items to keep gifts secret.
+
+### Claim System
+
+Claims use soft deletes with status tracking rather than hard deletes:
+- `active` - Currently claimed
+- `cancelled` - Unclaimed (preserves history)
+- `fulfilled` - Gift was given/received
+
+Split claims allow multiple users to contribute to expensive gifts.
 
 ### Supabase Client Usage
 
@@ -92,6 +104,29 @@ Server actions in `src/lib/actions/` handle all data mutations. They:
 2. Perform database operations
 3. Call `revalidatePath()` for cache invalidation
 4. Return `{ success, error?, data? }` objects
+
+### TanStack Query Pattern
+
+For client-side data fetching, use the query key factory in `src/lib/queries/keys.ts`:
+
+```typescript
+// Define keys in keys.ts
+export const queryKeys = {
+  feed: {
+    all: ["feed"] as const,
+    friends: () => [...queryKeys.feed.all, "friends"] as const,
+  },
+} as const;
+
+// Create hooks in hooks.ts
+export function useFriendActivityFeed() {
+  return useInfiniteQuery({
+    queryKey: queryKeys.feed.friends(),
+    queryFn: ({ pageParam }) => getFriendActivityFeed(pageParam),
+    // ...
+  });
+}
+```
 
 ## Design System
 

@@ -3,7 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Gift, Package, Loader2, Users, Check } from "lucide-react";
+import {
+  ExternalLink,
+  Gift,
+  Package,
+  Loader2,
+  Users,
+  Check,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { claimItem, unclaimItem } from "@/lib/actions/claims";
@@ -26,8 +34,11 @@ export function FeedCard({ item }: FeedCardProps) {
   const isClaimed =
     optimisticClaimed !== null ? optimisticClaimed : item.claimed_by_me;
   const wishlistUrl = `/friends/${item.friend.id}/wishlists/${item.wishlist.id}`;
+  const imageUrl = item.item.custom_image_url || item.item.image_url;
 
-  async function handleClaim() {
+  async function handleClaim(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
     setIsLoading(true);
     setOptimisticClaimed(true);
 
@@ -44,7 +55,9 @@ export function FeedCard({ item }: FeedCardProps) {
     setIsLoading(false);
   }
 
-  async function handleUnclaim() {
+  async function handleUnclaim(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
     setIsLoading(true);
     setOptimisticClaimed(false);
 
@@ -62,158 +75,150 @@ export function FeedCard({ item }: FeedCardProps) {
   }
 
   return (
-    <div className="group relative h-full bg-card border border-border/50 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-200 hover:-translate-y-1">
-      {/* Hover gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
+    <div className="group relative flex items-center gap-4 p-3 rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-border/50">
+      {/* Background link for the whole row */}
+      <Link href={wishlistUrl} className="absolute inset-0 z-0" />
 
-      {/* Image */}
-      <div className="relative aspect-square bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-        <Link href={wishlistUrl} className="absolute inset-0 z-0">
-          {(item.item.custom_image_url || item.item.image_url) ? (
-            <Image
-              src={item.item.custom_image_url || item.item.image_url!}
-              alt={item.item.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Package className="w-12 h-12 text-muted-foreground/30" />
-            </div>
-          )}
-        </Link>
-
-        {/* Price badge */}
-        {item.item.price && (
-          <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-card/95 backdrop-blur-sm text-sm font-semibold shadow-md border border-border/30 pointer-events-none">
-            {item.item.currency} {item.item.price}
+      {/* Item Image */}
+      <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gradient-to-br from-muted to-muted/50 ring-1 ring-border/50 group-hover:ring-primary/20 transition-all pointer-events-none">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={item.item.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="56px"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="w-6 h-6 text-muted-foreground/30" />
           </div>
         )}
 
-        {/* External link - positioned outside any Link */}
-        {item.item.url && (
-          <a
-            href={item.item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-20 h-9 w-9 rounded-xl bg-card/95 backdrop-blur-sm shadow-md hover:bg-card border border-border/30 flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
-        )}
-
-        {/* Split claim badge */}
+        {/* Split claim indicator */}
         {item.has_split_claim && (
-          <div className="absolute top-3 left-3 pointer-events-none">
-            <div className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-semibold text-white shadow-md flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              Split active
-            </div>
+          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+            <Users className="w-3 h-3 text-white" />
           </div>
         )}
 
         {/* Claimed overlay */}
-        {(item.is_claimed && !item.claimed_by_me) && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
-            <div className="px-3 py-1.5 rounded-full bg-muted text-sm font-medium text-muted-foreground">
-              Already claimed
-            </div>
+        {item.is_claimed && !item.claimed_by_me && (
+          <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
+            <Check className="w-4 h-4 text-muted-foreground" />
           </div>
         )}
       </div>
 
       {/* Content */}
-      <div className="relative p-4">
-        {/* Friend info */}
-        <Link
-          href={`/friends/${item.friend.id}`}
-          className="flex items-center gap-2 mb-3 group/friend"
-        >
-          <UserAvatar
-            avatarUrl={item.friend.avatar_url}
-            displayName={item.friend.display_name}
-            size="sm"
-          />
-          <span className="text-sm text-muted-foreground group-hover/friend:text-foreground transition-colors">
-            {item.friend.display_name || "Friend"}
-          </span>
-        </Link>
+      <div className="flex-1 min-w-0 relative pointer-events-none">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            {/* Item title */}
+            <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
+              {item.item.title}
+            </p>
 
-        {/* Item title */}
-        <Link href={wishlistUrl}>
-          <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors">
-            {item.item.title}
-          </h3>
-        </Link>
-
-        {item.item.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-1.5">
-            {item.item.description}
-          </p>
-        )}
-
-        {/* Action */}
-        <div className="mt-3 pt-3 border-t border-border/50">
-          {isClaimed ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.preventDefault();
-                handleUnclaim();
-              }}
-              disabled={isLoading}
-              className="w-full h-9 rounded-xl"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Check className="w-4 h-4 mr-2 text-emerald-600" />
-                  <span className="text-emerald-600">You&apos;re getting this</span>
-                </>
-              )}
-            </Button>
-          ) : item.is_claimed ? (
-            <span className="text-xs text-muted-foreground flex items-center justify-center h-9">
-              Already claimed by someone
-            </span>
-          ) : item.has_split_claim ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full h-9 rounded-xl"
-              asChild
-            >
-              <Link href={wishlistUrl}>
-                <Users className="w-4 h-4 mr-2" />
-                Join Split
+            {/* Friend info row */}
+            <div className="flex items-center gap-2 mt-1">
+              <Link
+                href={`/friends/${item.friend.id}`}
+                className="flex items-center gap-1.5 group/friend relative z-20 pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <UserAvatar
+                  avatarUrl={item.friend.avatar_url}
+                  displayName={item.friend.display_name}
+                  size="xs"
+                />
+                <span className="text-xs text-muted-foreground group-hover/friend:text-foreground transition-colors truncate max-w-[100px]">
+                  {item.friend.display_name || "Friend"}
+                </span>
               </Link>
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                handleClaim();
-              }}
-              disabled={isLoading}
-              className="w-full h-9 rounded-xl shadow-md shadow-primary/20"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
+
+              {item.item.price && (
                 <>
-                  <Gift className="w-4 h-4 mr-2" />
-                  Quick Claim
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {item.item.currency} {item.item.price}
+                  </span>
                 </>
               )}
-            </Button>
-          )}
+            </div>
+          </div>
+
+          {/* Action area */}
+          <div className="flex items-center gap-2 shrink-0 relative z-20 pointer-events-auto">
+            {/* External link */}
+            {item.item.url && (
+              <a
+                href={item.item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
+
+            {/* Claim button / status */}
+            {isClaimed ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleUnclaim}
+                disabled={isLoading}
+                className="h-8 px-3 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-1.5" />
+                    <span className="text-xs font-medium">Claimed</span>
+                  </>
+                )}
+              </Button>
+            ) : item.is_claimed ? (
+              <span className="text-[10px] text-muted-foreground/70 px-2 py-1 rounded-md bg-muted/50">
+                Taken
+              </span>
+            ) : item.has_split_claim ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 px-3 rounded-lg text-xs"
+                asChild
+              >
+                <Link href={wishlistUrl} onClick={(e) => e.stopPropagation()}>
+                  <Users className="w-3.5 h-3.5 mr-1.5" />
+                  Join
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handleClaim}
+                disabled={isLoading}
+                className="h-8 px-3 rounded-lg text-xs shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 transition-shadow"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Gift className="w-3.5 h-3.5 mr-1.5" />
+                    Claim
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Chevron indicator */}
+      <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary/50 group-hover:translate-x-0.5 transition-all shrink-0 pointer-events-none" />
     </div>
   );
 }

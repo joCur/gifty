@@ -42,10 +42,27 @@ export async function getFriendActivityFeed(
   const accessibleSelectedWishlistIds =
     selectedFriendsAccess?.map((sf) => sf.wishlist_id) || [];
 
-  // Build query for wishlist items from friends
-  // Only show items from:
-  // 1. Wishlists with privacy "friends" or "public" (visible to all friends)
-  // 2. Wishlists with privacy "selected_friends" where user is in the selected list
+  // Step 1: Get accessible wishlist IDs from friends
+  // Filter by: friend ownership, not archived, and privacy settings
+  const { data: accessibleWishlists } = await supabase
+    .from("wishlists")
+    .select("id, name, user_id")
+    .in("user_id", friendIds)
+    .eq("is_archived", false)
+    .or(
+      accessibleSelectedWishlistIds.length > 0
+        ? `privacy.in.(friends,public),and(privacy.eq.selected_friends,id.in.(${accessibleSelectedWishlistIds.join(",")}))`
+        : "privacy.in.(friends,public)"
+    );
+
+  if (!accessibleWishlists || accessibleWishlists.length === 0) {
+    return { items: [], next_cursor: null, has_more: false };
+  }
+
+  const accessibleWishlistIds = accessibleWishlists.map((w) => w.id);
+  const wishlistsMap = new Map(accessibleWishlists.map((w) => [w.id, w]));
+
+  // Step 2: Query items from those wishlists
   let query = supabase
     .from("wishlist_items")
     .select(
@@ -59,19 +76,10 @@ export async function getFriendActivityFeed(
       currency,
       url,
       created_at,
-      wishlist_id,
-      wishlists!inner(
-        id,
-        name,
-        user_id,
-        privacy
-      )
+      wishlist_id
     `
     )
-    .in("wishlists.user_id", friendIds)
-    .or(
-      `wishlists.privacy.in.(friends,public),and(wishlists.privacy.eq.selected_friends,wishlists.id.in.(${accessibleSelectedWishlistIds.length > 0 ? accessibleSelectedWishlistIds.join(",") : "00000000-0000-0000-0000-000000000000"}))`
-    )
+    .in("wishlist_id", accessibleWishlistIds)
     .order("created_at", { ascending: false })
     .limit(limit + 1); // Fetch one extra to determine has_more
 
@@ -92,46 +100,41 @@ export async function getFriendActivityFeed(
     ? feedItems[feedItems.length - 1].created_at
     : null;
 
-  // Get owner profiles for the wishlists
-  const wishlistOwnerIds = [
-    ...new Set(feedItems.map((item) => (item.wishlists as { user_id: string }).user_id)),
-  ];
-  const { data: ownerProfiles } = await supabase
-    .from("profiles")
-    .select("id, display_name, avatar_url")
-    .in("id", wishlistOwnerIds);
-
-  const ownersMap = new Map(ownerProfiles?.map((p) => [p.id, p]) || []);
-
-  // Get claims for these items
+  // Prepare IDs for parallel queries
   const itemIds = feedItems.map((item) => item.id);
-  const { data: claims } = await supabase
-    .from("item_claims")
-    .select("item_id, claimed_by")
-    .in("item_id", itemIds);
+  const wishlistOwnerIds = [
+    ...new Set(
+      feedItems
+        .map((item) => wishlistsMap.get(item.wishlist_id)?.user_id)
+        .filter((id): id is string => typeof id === "string")
+    ),
+  ];
 
-  const claimsMap = new Map(claims?.map((c) => [c.item_id, c]) || []);
+  // Fetch owner profiles, claims, and split claims in parallel
+  const [ownerProfilesResult, claimsResult, splitClaimsResult] = await Promise.all([
+    wishlistOwnerIds.length > 0
+      ? supabase.from("profiles").select("id, display_name, avatar_url").in("id", wishlistOwnerIds)
+      : Promise.resolve({ data: [] }),
+    supabase.from("item_claims").select("item_id, claimed_by").in("item_id", itemIds).eq("status", "active"),
+    supabase.from("split_claims").select("item_id").in("item_id", itemIds).eq("claim_status", "active"),
+  ]);
 
-  // Get split claims
-  const { data: splitClaims } = await supabase
-    .from("split_claims")
-    .select("item_id")
-    .in("item_id", itemIds);
-
-  const splitClaimsSet = new Set(splitClaims?.map((sc) => sc.item_id) || []);
+  const ownersMap = new Map(ownerProfilesResult.data?.map((p) => [p.id, p]) || []);
+  const claimsMap = new Map(claimsResult.data?.map((c) => [c.item_id, c]) || []);
+  const splitClaimsSet = new Set(splitClaimsResult.data?.map((sc) => sc.item_id) || []);
 
   // Transform to feed items
   const feedActivityItems: FriendItemActivity[] = feedItems.map((item) => {
     const claim = claimsMap.get(item.id);
-    const wishlist = item.wishlists as { id: string; name: string; user_id: string };
-    const owner = ownersMap.get(wishlist.user_id);
+    const wishlist = wishlistsMap.get(item.wishlist_id);
+    const owner = wishlist ? ownersMap.get(wishlist.user_id) : null;
 
     return {
       id: item.id,
       type: "friend_item" as const,
       timestamp: item.created_at,
       friend: {
-        id: wishlist.user_id,
+        id: wishlist?.user_id || "",
         display_name: owner?.display_name || null,
         avatar_url: owner?.avatar_url || null,
       },
@@ -146,8 +149,8 @@ export async function getFriendActivityFeed(
         url: item.url,
       },
       wishlist: {
-        id: wishlist.id,
-        name: wishlist.name,
+        id: wishlist?.id || "",
+        name: wishlist?.name || "",
       },
       is_claimed: !!claim,
       claimed_by_me: claim?.claimed_by === user.id,
