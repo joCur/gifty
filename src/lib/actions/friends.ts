@@ -323,7 +323,6 @@ export async function getFriendWishlists(friendId: string) {
       `
       *,
       owner:profiles!wishlists_user_id_fkey(id, display_name, avatar_url),
-      items:wishlist_items(count),
       collaborators:wishlist_collaborators(user_id)
     `
     )
@@ -337,13 +336,42 @@ export async function getFriendWishlists(friendId: string) {
     return [];
   }
 
-  // Add isCollaborator flag for current user
-  const wishlistsWithCollabStatus = (data || []).map((wishlist) => ({
-    ...wishlist,
-    isCurrentUserCollaborator: (wishlist.collaborators || []).some(
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Fetch item counts from the view
+  const wishlistIds = data.map((w) => w.id);
+  const { data: counts } = await supabase
+    .from("wishlist_item_counts")
+    .select("wishlist_id, total_items, available_items")
+    .in("wishlist_id", wishlistIds);
+
+  // Create a map of wishlist_id to counts for quick lookup
+  const countsMap = new Map(
+    (counts || []).map((c) => [c.wishlist_id, c])
+  );
+
+  // Add isCollaborator flag and use appropriate item count
+  const wishlistsWithCollabStatus = data.map((wishlist) => {
+    const isCurrentUserCollaborator = (wishlist.collaborators || []).some(
       (c: { user_id: string }) => c.user_id === user.id
-    ),
-  }));
+    );
+
+    // Get counts from the map
+    const itemCounts = countsMap.get(wishlist.id);
+
+    // If user is collaborator, show total; otherwise show available (excludes received/purchased)
+    const itemCount = isCurrentUserCollaborator
+      ? (itemCounts?.total_items || 0)
+      : (itemCounts?.available_items || 0);
+
+    return {
+      ...wishlist,
+      items: [{ count: itemCount }], // Maintain backward compatibility
+      isCurrentUserCollaborator,
+    };
+  });
 
   return wishlistsWithCollabStatus;
 }

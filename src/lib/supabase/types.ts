@@ -209,7 +209,7 @@ export type Database = {
           {
             foreignKeyName: "item_claims_item_id_fkey"
             columns: ["item_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "wishlist_items"
             referencedColumns: ["id"]
           },
@@ -385,6 +385,13 @@ export type Database = {
             foreignKeyName: "notifications_wishlist_id_fkey"
             columns: ["wishlist_id"]
             isOneToOne: false
+            referencedRelation: "wishlist_item_counts"
+            referencedColumns: ["wishlist_id"]
+          },
+          {
+            foreignKeyName: "notifications_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
             referencedRelation: "wishlists"
             referencedColumns: ["id"]
           },
@@ -504,7 +511,7 @@ export type Database = {
           {
             foreignKeyName: "split_claims_item_id_fkey"
             columns: ["item_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "wishlist_items"
             referencedColumns: ["id"]
           },
@@ -546,6 +553,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_collaborators_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_item_counts"
+            referencedColumns: ["wishlist_id"]
           },
           {
             foreignKeyName: "wishlist_collaborators_wishlist_id_fkey"
@@ -610,6 +624,13 @@ export type Database = {
             foreignKeyName: "wishlist_items_wishlist_id_fkey"
             columns: ["wishlist_id"]
             isOneToOne: false
+            referencedRelation: "wishlist_item_counts"
+            referencedColumns: ["wishlist_id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
             referencedRelation: "wishlists"
             referencedColumns: ["id"]
           },
@@ -641,6 +662,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_selected_friends_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_item_counts"
+            referencedColumns: ["wishlist_id"]
           },
           {
             foreignKeyName: "wishlist_selected_friends_wishlist_id_fkey"
@@ -697,7 +725,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      wishlist_item_counts: {
+        Row: {
+          available_items: number | null
+          owner_id: string | null
+          total_items: number | null
+          wishlist_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_user_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       are_friends: {
