@@ -29,7 +29,7 @@ export function BottomNav() {
                 key={href}
                 href={href}
                 className={cn(
-                  "relative flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all",
+                  "relative flex flex-col items-center justify-start flex-1 h-full pt-3 gap-1 transition-all",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
@@ -37,7 +37,7 @@ export function BottomNav() {
               >
                 {/* Active indicator */}
                 {isActive && (
-                  <span className="absolute top-2 w-8 h-1 rounded-full bg-primary" />
+                  <span className="absolute top-1 w-8 h-1 rounded-full bg-primary" />
                 )}
                 <span
                   className={cn(
