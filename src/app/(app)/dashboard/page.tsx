@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
+      <div className="animate-fade-up">
         <h1 className="font-[family-name:var(--font-outfit)] text-2xl sm:text-3xl font-bold">
           Welcome Back
         </h1>
@@ -27,18 +27,20 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Stats */}
-      <QuickStats stats={stats} />
+      <div className="animate-fade-up delay-100">
+        <QuickStats stats={stats} />
+      </div>
 
-      {/* Two-column layout */}
-      <div className="grid gap-8 lg:grid-cols-[1fr,380px] xl:grid-cols-[1fr,420px]">
-        {/* Main content column */}
-        <div className="space-y-8 order-2 lg:order-1">
+      {/* Two-column responsive layout */}
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-3 animate-fade-up delay-200">
+        {/* Main content column - takes 2/3 of space on desktop */}
+        <div className="space-y-8 lg:col-span-2">
           {/* Friends' Recent Items Feed */}
           <FriendsFeed />
         </div>
 
-        {/* Sidebar column */}
-        <div className="space-y-6 order-1 lg:order-2">
+        {/* Sidebar column - takes 1/3 of space on desktop */}
+        <div className="space-y-6 lg:col-span-1">
           {/* Upcoming Birthdays */}
           <BirthdaySection birthdays={birthdays} />
 
