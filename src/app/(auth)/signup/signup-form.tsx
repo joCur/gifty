@@ -23,7 +23,7 @@ export function SignupForm() {
   useEffect(() => {
     async function checkInvite() {
       if (!inviteCode) {
-        setInviteError("An invite code is required to join Giftify. Ask a friend for an invite!");
+        setInviteError("An invite code is required to join Gifty. Ask a friend for an invite!");
         setIsValidating(false);
         return;
       }

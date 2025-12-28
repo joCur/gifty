@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Giftify is a wishlist sharing and gift coordination app built with Next.js 16 and Supabase. Users create wishlists, share them with friends, and coordinate gift purchases through a claiming system that keeps gifts secret from recipients.
+Gifty is a wishlist sharing and gift coordination app built with Next.js 16 and Supabase. Users create wishlists, share them with friends, and coordinate gift purchases through a claiming system that keeps gifts secret from recipients.
 
 ## Commands
 

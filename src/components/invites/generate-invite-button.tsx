@@ -86,7 +86,7 @@ export function GenerateInviteButton() {
               Invite Created!
             </DialogTitle>
             <DialogDescription>
-              Share this link with a friend to invite them to Giftify. This invite expires in 7 days.
+              Share this link with a friend to invite them to Gifty. This invite expires in 7 days.
             </DialogDescription>
           </DialogHeader>
 

@@ -23,14 +23,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Giftify - Share Your Wishlists",
+  title: "Gifty - Share Your Wishlists",
   description:
     "Share what you need and wish for with friends. Never wonder what to gift again.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Giftify",
+    title: "Gifty",
   },
 };
 

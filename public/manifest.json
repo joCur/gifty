@@ -1,6 +1,6 @@
 {
-  "name": "Giftify",
-  "short_name": "Giftify",
+  "name": "Gifty",
+  "short_name": "Gifty",
   "description": "Share your wishlists with friends. Never wonder what to gift again.",
   "start_url": "/",
   "display": "standalone",

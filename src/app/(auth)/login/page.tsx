@@ -127,7 +127,7 @@ function LoginForm() {
           {/* Invite-only notice */}
           <div className="pt-2 text-center">
             <p className="text-xs text-muted-foreground">
-              Giftify is invite-only. Ask a friend for an invite to join!
+              Gifty is invite-only. Ask a friend for an invite to join!
             </p>
           </div>
         </form>

@@ -44,7 +44,7 @@ export default async function HomePage() {
           <Link href="/" className="flex items-center gap-3 group">
             <AppLogo size="md" />
             <span className="font-[family-name:var(--font-outfit)] font-bold text-xl tracking-tight">
-              Giftify
+              Gifty
             </span>
           </Link>
           <div className="flex items-center gap-3">
@@ -275,7 +275,7 @@ export default async function HomePage() {
                   Ready to make gifting easier?
                 </h2>
                 <p className="text-lg text-primary-foreground/80 max-w-lg mx-auto">
-                  Join Giftify and start sharing wishlists with friends and family today.
+                  Join Gifty and start sharing wishlists with friends and family today.
                 </p>
                 <Link href="/signup">
                   <Button size="lg" variant="secondary" className="text-base px-8 h-12 font-semibold shadow-xl hover:-translate-y-1 transition-all mt-4">
@@ -294,7 +294,7 @@ export default async function HomePage() {
         <div className="container max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <AppLogo size="xs" showHoverEffect={false} />
-            <span className="font-[family-name:var(--font-outfit)] font-semibold">Giftify</span>
+            <span className="font-[family-name:var(--font-outfit)] font-semibold">Gifty</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Share wishlists, coordinate gifts, celebrate together.

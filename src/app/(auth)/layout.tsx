@@ -42,7 +42,7 @@ export default function AuthLayout({
             </Link>
             <div className="text-center space-y-1">
               <h1 className="font-[family-name:var(--font-outfit)] text-3xl font-bold tracking-tight">
-                Giftify
+                Gifty
               </h1>
               <p className="text-muted-foreground">
                 Share wishlists, coordinate gifts

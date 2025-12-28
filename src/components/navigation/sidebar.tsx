@@ -31,7 +31,7 @@ export function Sidebar({ profile }: SidebarProps) {
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <AppLogo size="md" />
             <span className="font-[family-name:var(--font-outfit)] font-bold text-xl">
-              Giftify
+              Gifty
             </span>
           </Link>
           <NotificationBell />

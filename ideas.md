@@ -10,7 +10,5 @@
 - clicking on an item in the claims history opens the wishlist it is/was part of not showing the item, this is problematic beause the item is no longer visible in the list, when it is marked as received.
 - sentry
 - feature-requests/issues
-- closing dialogs does not clean them
 - the web app does not feel reactive at all on mobile devices as pwa, can we do anything about it? No reactions on button presses, no loading animations between actions, ...
 - notifications on device (pwa)
-- rename from giftify to gifty

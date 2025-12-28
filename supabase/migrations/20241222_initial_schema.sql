@@ -1,4 +1,4 @@
--- Giftify Database Schema
+-- Gifty Database Schema
 -- Initial migration with all tables and RLS policies
 
 -- Note: Using gen_random_uuid() which is built into PostgreSQL 13+

@@ -1,4 +1,4 @@
--- Giftify Development Seed Data
+-- Gifty Development Seed Data
 -- This file seeds the database with test users and data for development
 -- Run with: supabase db reset (which runs migrations + seed)
 

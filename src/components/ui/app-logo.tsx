@@ -37,7 +37,7 @@ export function AppLogo({
     >
       <Image
         src="/icons/icon-512x512.svg"
-        alt="Giftify"
+        alt="Gifty"
         width={config.image}
         height={config.image}
         className="w-full h-full"

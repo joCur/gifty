@@ -18,7 +18,7 @@ export function TopHeader({ profile }: TopHeaderProps) {
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <AppLogo size="sm" />
             <span className="font-[family-name:var(--font-outfit)] font-semibold text-lg">
-              Giftify
+              Gifty
             </span>
           </Link>
           <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
-# Giftify Style Guide
+# Gifty Style Guide
 
-A comprehensive guide to the visual design system for Giftify.
+A comprehensive guide to the visual design system for Gifty.
 
 ---
 
