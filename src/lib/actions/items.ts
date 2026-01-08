@@ -8,6 +8,7 @@ import {
   validateImageFile,
   generateStorageFileName,
 } from "@/lib/utils/storage";
+import { notifyWishlistViewers } from "@/lib/notifications/builder";
 
 const BUCKET_NAME = "item-images";
 
@@ -50,7 +51,7 @@ export async function addItem(wishlistId: string, formData: FormData) {
     // Verify user can edit the wishlist (owner or collaborator) and it's not archived
     const { data: wishlist } = await supabase
       .from("wishlists")
-      .select("user_id, is_archived")
+      .select("user_id, is_archived, name, privacy")
       .eq("id", wishlistId)
       .single();
 
@@ -114,7 +115,7 @@ export async function addItem(wishlistId: string, formData: FormData) {
         currency: currency?.trim() || null,
         notes: notes?.trim() || null,
       })
-      .select("id")
+      .select("id, title, image_url, price, currency")
       .single();
 
     if (insertError || !newItem) {
@@ -146,6 +147,43 @@ export async function addItem(wishlistId: string, formData: FormData) {
           .from("wishlist_items")
           .update({ custom_image_url: publicUrl })
           .eq("id", newItem.id);
+      }
+    }
+
+    // Create V2 notification (only for non-private wishlists)
+    if (wishlist.privacy !== "private") {
+      try {
+        // Get user profile for notification metadata
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url")
+          .eq("id", user.id)
+          .single();
+
+        // Get final item data (including custom_image_url if uploaded)
+        const { data: finalItem } = await supabase
+          .from("wishlist_items")
+          .select("image_url, custom_image_url")
+          .eq("id", newItem.id)
+          .single();
+
+        const imageUrl = finalItem?.custom_image_url || finalItem?.image_url || newItem.image_url;
+
+        await notifyWishlistViewers(wishlistId, wishlist.user_id, "item_added", {
+          wishlist_id: wishlistId,
+          wishlist_name: wishlist.name,
+          item_id: newItem.id,
+          item_title: newItem.title,
+          item_image_url: imageUrl,
+          item_price: newItem.price ? parseFloat(newItem.price) : null,
+          item_currency: newItem.currency,
+          owner_id: wishlist.user_id,
+          owner_name: profile?.display_name || "A friend",
+          owner_avatar_url: profile?.avatar_url,
+        });
+      } catch (notifError) {
+        // Log but don't fail the main operation
+        console.error("Failed to send item added notification:", notifError);
       }
     }
 

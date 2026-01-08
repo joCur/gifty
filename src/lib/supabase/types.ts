@@ -955,15 +955,6 @@ export type Database = {
         }[]
       }
       get_friend_ids: { Args: { p_user_id: string }; Returns: string[] }
-      get_split_claim_item_info: {
-        Args: { p_item_id: string }
-        Returns: {
-          item_title: string
-          wishlist_id: string
-          wishlist_name: string
-          wishlist_owner_id: string
-        }[]
-      }
       get_split_participant_ids: {
         Args: { p_exclude_user_id?: string; p_split_claim_id: string }
         Returns: string[]
@@ -988,31 +979,6 @@ export type Database = {
         Args: { target_user_id: string; target_wishlist_id: string }
         Returns: boolean
       }
-      notify_friends: {
-        Args: {
-          p_item_id?: string
-          p_message: string
-          p_title: string
-          p_type: Database["public"]["Enums"]["notification_type"]
-          p_user_id: string
-          p_wishlist_id?: string
-        }
-        Returns: undefined
-      }
-      notify_split_participants: {
-        Args: {
-          p_actor_id: string
-          p_exclude_user_id?: string
-          p_item_id?: string
-          p_message: string
-          p_split_claim_id: string
-          p_title: string
-          p_type: Database["public"]["Enums"]["notification_type"]
-          p_wishlist_id?: string
-        }
-        Returns: undefined
-      }
-      send_birthday_reminders: { Args: never; Returns: undefined }
       validate_invite_code: {
         Args: { invite_code: string }
         Returns: {

@@ -12,3 +12,4 @@
 - feature-requests/issues
 - the web app does not feel reactive at all on mobile devices as pwa, can we do anything about it? No reactions on button presses, no loading animations between actions, ...
 - notifications on device (pwa)
+- restrict access to unrestricted tables/views

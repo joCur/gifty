@@ -10,26 +10,35 @@
 import { z } from "zod";
 
 // ============================================
+// CUSTOM VALIDATORS
+// ============================================
+
+// Lenient UUID validation that accepts any UUID-formatted string (including test UUIDs)
+// This allows UUIDs like 33333333-3333-3333-3333-333333333333 used in test/seed data
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const lenientUuid = () => z.string().regex(uuidRegex, "Invalid UUID format");
+
+// ============================================
 // ZOD SCHEMAS (Runtime Validation)
 // ============================================
 
 // Social notifications
 export const friendRequestReceivedMetadataSchema = z.object({
-  friendship_id: z.string().uuid(),
-  requester_id: z.string().uuid(),
+  friendship_id: lenientUuid(),
+  requester_id: lenientUuid(),
   requester_name: z.string(),
   requester_avatar_url: z.string().nullable().optional(),
 });
 
 export const friendRequestAcceptedMetadataSchema = z.object({
-  friendship_id: z.string().uuid(),
-  accepter_id: z.string().uuid(),
+  friendship_id: lenientUuid(),
+  accepter_id: lenientUuid(),
   accepter_name: z.string(),
   accepter_avatar_url: z.string().nullable().optional(),
 });
 
 export const birthdayReminderMetadataSchema = z.object({
-  friend_id: z.string().uuid(),
+  friend_id: lenientUuid(),
   friend_name: z.string(),
   friend_avatar_url: z.string().nullable().optional(),
   birthday_date: z.string(), // ISO date
@@ -38,48 +47,48 @@ export const birthdayReminderMetadataSchema = z.object({
 
 // Wishlist activity
 export const wishlistCreatedMetadataSchema = z.object({
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  owner_id: z.string().uuid(),
+  owner_id: lenientUuid(),
   owner_name: z.string(),
   owner_avatar_url: z.string().nullable().optional(),
   privacy: z.string(),
 });
 
 export const itemAddedMetadataSchema = z.object({
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  item_id: z.string().uuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
   item_price: z.number().nullable().optional(),
   item_currency: z.string().nullable().optional(),
-  owner_id: z.string().uuid(),
+  owner_id: lenientUuid(),
   owner_name: z.string(),
   owner_avatar_url: z.string().nullable().optional(),
 });
 
 export const wishlistArchivedMetadataSchema = z.object({
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  owner_id: z.string().uuid(),
+  owner_id: lenientUuid(),
   owner_name: z.string(),
   owner_avatar_url: z.string().nullable().optional(),
 });
 
 // Gift claims
 export const splitInitiatedMetadataSchema = z.object({
-  split_claim_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  split_claim_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
   item_price: z.number().nullable().optional(),
   item_currency: z.string().nullable().optional(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  wishlist_owner_id: z.string().uuid(),
+  wishlist_owner_id: lenientUuid(),
   wishlist_owner_name: z.string(),
-  initiator_id: z.string().uuid(),
+  initiator_id: lenientUuid(),
   initiator_name: z.string(),
   initiator_avatar_url: z.string().nullable().optional(),
   target_participants: z.number().int().positive(),
@@ -87,14 +96,14 @@ export const splitInitiatedMetadataSchema = z.object({
 });
 
 export const splitJoinedMetadataSchema = z.object({
-  split_claim_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  split_claim_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  wishlist_owner_id: z.string().uuid(),
-  joiner_id: z.string().uuid(),
+  wishlist_owner_id: lenientUuid(),
+  joiner_id: lenientUuid(),
   joiner_name: z.string(),
   joiner_avatar_url: z.string().nullable().optional(),
   current_participants: z.number().int().positive(),
@@ -102,29 +111,29 @@ export const splitJoinedMetadataSchema = z.object({
 });
 
 export const splitLeftMetadataSchema = z.object({
-  split_claim_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  split_claim_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  wishlist_owner_id: z.string().uuid(),
-  leaver_id: z.string().uuid(),
+  wishlist_owner_id: lenientUuid(),
+  leaver_id: lenientUuid(),
   leaver_name: z.string(),
   remaining_participants: z.number().int().nonnegative(),
   target_participants: z.number().int().positive(),
 });
 
 export const splitConfirmedMetadataSchema = z.object({
-  split_claim_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  split_claim_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  wishlist_owner_id: z.string().uuid(),
+  wishlist_owner_id: lenientUuid(),
   participants: z.array(
     z.object({
-      user_id: z.string().uuid(),
+      user_id: lenientUuid(),
       display_name: z.string(),
       avatar_url: z.string().nullable().optional(),
     })
@@ -134,97 +143,97 @@ export const splitConfirmedMetadataSchema = z.object({
 });
 
 export const splitCancelledMetadataSchema = z.object({
-  split_claim_id: z.string().uuid().nullable().optional(),
-  item_id: z.string().uuid(),
+  split_claim_id: lenientUuid().nullable().optional(),
+  item_id: lenientUuid(),
   item_title: z.string(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  wishlist_owner_id: z.string().uuid(),
-  canceller_id: z.string().uuid(),
+  wishlist_owner_id: lenientUuid(),
+  canceller_id: lenientUuid(),
   canceller_name: z.string(),
   reason: z.string().optional(),
 });
 
 export const giftReceivedMetadataSchema = z.object({
-  item_id: z.string().uuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  recipient_id: z.string().uuid(),
+  recipient_id: lenientUuid(),
   recipient_name: z.string(),
   claim_type: z.enum(["solo", "split"]),
-  claim_id: z.string().uuid(),
+  claim_id: lenientUuid(),
   marked_at: z.string(),
 });
 
 export const giftMarkedGivenMetadataSchema = z.object({
-  item_id: z.string().uuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  giver_id: z.string().uuid(),
+  giver_id: lenientUuid(),
   giver_name: z.string(),
-  recipient_id: z.string().uuid(),
+  recipient_id: lenientUuid(),
   recipient_name: z.string(),
   marked_at: z.string(),
 });
 
 // Ownership flags
 export const itemFlaggedMetadataSchema = z.object({
-  flag_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  flag_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
   item_image_url: z.string().nullable().optional(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  wishlist_owner_id: z.string().uuid(),
-  flagger_id: z.string().uuid(),
+  wishlist_owner_id: lenientUuid(),
+  flagger_id: lenientUuid(),
   flagger_name: z.string(),
   flagger_avatar_url: z.string().nullable().optional(),
   reason: z.string().optional(),
 });
 
 export const flagConfirmedMetadataSchema = z.object({
-  flag_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  flag_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  owner_id: z.string().uuid(),
+  owner_id: lenientUuid(),
   owner_name: z.string(),
-  flagger_id: z.string().uuid(),
+  flagger_id: lenientUuid(),
 });
 
 export const flagDeniedMetadataSchema = z.object({
-  flag_id: z.string().uuid(),
-  item_id: z.string().uuid(),
+  flag_id: lenientUuid(),
+  item_id: lenientUuid(),
   item_title: z.string(),
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  owner_id: z.string().uuid(),
+  owner_id: lenientUuid(),
   owner_name: z.string(),
-  flagger_id: z.string().uuid(),
+  flagger_id: lenientUuid(),
   denial_reason: z.string().optional(),
 });
 
 // Collaboration
 export const collaboratorInvitedMetadataSchema = z.object({
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  primary_owner_id: z.string().uuid(),
+  primary_owner_id: lenientUuid(),
   primary_owner_name: z.string(),
-  inviter_id: z.string().uuid(),
+  inviter_id: lenientUuid(),
   inviter_name: z.string(),
-  invited_user_id: z.string().uuid(),
+  invited_user_id: lenientUuid(),
 });
 
 export const collaboratorLeftMetadataSchema = z.object({
-  wishlist_id: z.string().uuid(),
+  wishlist_id: lenientUuid(),
   wishlist_name: z.string(),
-  primary_owner_id: z.string().uuid(),
-  leaver_id: z.string().uuid(),
+  primary_owner_id: lenientUuid(),
+  leaver_id: lenientUuid(),
   leaver_name: z.string(),
 });
 

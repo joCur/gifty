@@ -13,9 +13,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NotificationList } from "./notification-list";
-import { useNotifications } from "@/hooks/use-notifications";
-import { useArchivedNotifications } from "@/hooks/use-archived-notifications";
+import { NotificationListV2 } from "./notification-list-v2";
+import { useNotificationsV2 } from "@/hooks/use-notifications-v2";
+import { useArchivedNotificationsV2 } from "@/hooks/use-archived-notifications-v2";
 
 export function NotificationBell() {
   const [mounted, setMounted] = useState(false);
@@ -30,14 +30,14 @@ export function NotificationBell() {
     archiveNotification,
     archiveAllRead,
     refetch: refetchInbox,
-  } = useNotifications();
+  } = useNotificationsV2();
 
   const {
     notifications: archivedNotifications,
     isLoading: isArchivedLoading,
     unarchiveNotification,
     refetch: refetchArchived,
-  } = useArchivedNotifications();
+  } = useArchivedNotificationsV2();
 
   // Prevent hydration mismatch by only rendering Sheet after mount
   useEffect(() => {
@@ -104,7 +104,7 @@ export function NotificationBell() {
           </TabsList>
 
           <TabsContent value="inbox" className="flex-1 mt-3 data-[state=inactive]:hidden">
-            <NotificationList
+            <NotificationListV2
               notifications={notifications}
               isLoading={isLoading}
               view="inbox"
@@ -117,7 +117,7 @@ export function NotificationBell() {
           </TabsContent>
 
           <TabsContent value="archived" className="flex-1 mt-3 data-[state=inactive]:hidden">
-            <NotificationList
+            <NotificationListV2
               notifications={archivedNotifications}
               isLoading={isArchivedLoading}
               view="archived"
