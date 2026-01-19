@@ -15,8 +15,7 @@ COMMENT ON INDEX idx_wishlist_items_availability IS
   'Optimizes counting of available items (not received, not purchased) for friend views';
 
 -- Create view with pre-computed item counts
-CREATE OR REPLACE VIEW wishlist_item_counts
-WITH (security_invoker = true) AS
+CREATE OR REPLACE VIEW wishlist_item_counts AS
 SELECT
   w.id AS wishlist_id,
   w.user_id AS owner_id,
