@@ -3,13 +3,13 @@
   "spec": "003-restrict-access-to-unrestricted-tables-views-for-b",
   "state": "building",
   "subtasks": {
-    "completed": 3,
+    "completed": 4,
     "total": 6,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Manual Access Control Testing",
+    "current": "Browser E2E Verification",
     "id": null,
     "total": 2
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 4,
+    "number": 5,
     "started_at": "2026-01-19T15:14:30.182347"
   },
-  "last_update": "2026-01-19T15:23:04.276756"
+  "last_update": "2026-01-19T15:26:56.186646"
 }
