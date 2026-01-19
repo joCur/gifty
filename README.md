@@ -81,12 +81,16 @@ Never wonder what to gift again. Share wishlists with friends and family, see wh
    ```
 
 3. **Set up environment variables**
-   Create a `.env.local` file in the root directory:
+   Create a `.env.local` file in the root directory. Use `.env.example` as a template:
    ```bash
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   cp .env.example .env.local
    ```
-   See [Environment Variables](#environment-variables) section below for details on obtaining these.
+   Then edit `.env.local` and add your actual values:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   ```
+   See [Environment Variables](#environment-variables) section below for details on obtaining these values.
 
 4. **Start the development server**
    ```bash
@@ -153,26 +157,47 @@ After running `supabase start`, local Supabase will be available at:
 
 ## ⚙️ Environment Variables
 
+### Setup
+Copy the `.env.example` file to `.env.local` and fill in your actual values:
+```bash
+cp .env.example .env.local
+```
+
 ### Required Variables
 
 | Variable | Description | Where to Get |
 |----------|-------------|--------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | [Supabase Console](https://app.supabase.com) → Settings → API → Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) key | [Supabase Console](https://app.supabase.com) → Settings → API → anon public |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | 1. Go to [Supabase Console](https://app.supabase.com) 2. Select your project 3. Click "Settings" 4. Click "API" 5. Copy "Project URL" |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) key | 1. Go to [Supabase Console](https://app.supabase.com) 2. Select your project 3. Click "Settings" 4. Click "API" 5. Copy the "anon public" key under "Project API keys" |
+
+**Note:** These variables are marked with `NEXT_PUBLIC_` prefix, which means they're safe to expose in the browser. They only provide read/write access according to your Supabase Row Level Security (RLS) policies.
 
 ### Optional Variables (Edge Functions)
 
-| Variable | Description | Purpose |
-|----------|-------------|---------|
-| `LINKPREVIEW_API_KEY` | API key for link preview service | Used in edge functions for fetching product metadata from URLs |
+| Variable | Description | Where to Get | Purpose |
+|----------|-------------|--------------|---------|
+| `LINKPREVIEW_API_KEY` | API key for link preview service | Get from your link preview provider (e.g., [microlink.io](https://microlink.io), [linkpreview.net](https://www.linkpreview.net)) | Used in Supabase edge functions for fetching product metadata from URLs when users add items to their wishlists |
+
+**Note:** If you don't provide `LINKPREVIEW_API_KEY`, the app will still work, but link previews may not load or may have reduced functionality.
 
 ### Example `.env.local`
-```
+```bash
+# Required
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Optional
+LINKPREVIEW_API_KEY=your-api-key-here
 ```
 
-For more details, see [CLAUDE.md](./CLAUDE.md).
+### Local Development with Supabase
+When using a local Supabase instance (via `supabase start`), update your `.env.local`:
+```bash
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<local-anon-key-from-supabase-output>
+```
+
+For more architecture details, see [CLAUDE.md](./CLAUDE.md).
 
 ---
 
