@@ -1,36 +1,253 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gifty – The Smarter Way to Gift
 
-## Getting Started
+Never wonder what to gift again. Share wishlists with friends and family, see what they actually want, and coordinate gifts without spoiling the surprise.
 
-First, run the development server:
+**Gifty** is a modern web app that transforms gift-giving by eliminating guesswork, preventing duplicate gifts, and keeping surprises secret. Built with Next.js and Supabase, it's designed to make gift coordination effortless for everyone.
 
+---
+
+## 🎁 Key Features
+
+### ✨ Create & Share Wishlists
+- Easily create personalized wishlists by pasting product links
+- Automatic metadata extraction—product images, names, and prices are fetched for you
+- Share wishlists with specific people or make them publicly discoverable
+- Organize items by occasion, interest, or category
+
+### 👥 Connect with Friends & Family
+- Build your network of friends and family members
+- Browse their wishlists instantly
+- Know exactly what they want for birthdays, holidays, and special occasions
+- Discover gift ideas without asking directly
+
+### 🎀 Coordinate Gifts Secretly
+- Claim items you plan to buy to avoid duplicate gifts
+- Others see what's already claimed, but the recipient never finds out
+- Split gift costs with friends—multiple people can contribute to one item
+- Gift claims remain confidential until the gift is given
+
+### 🔒 Privacy & Security
+- Fine-grained privacy controls—keep wishlists private, share with friends, or make them public
+- Wishlist owners can't see who claimed their items (gifts stay secret!)
+- Secure friend requests with accept/decline options
+- Built on Supabase with Row Level Security (RLS) for data protection
+
+### 📲 Built for All Devices
+- Fully responsive design—works seamlessly on mobile, tablet, and desktop
+- Progressive Web App (PWA) support for app-like experience
+- Fast, snappy performance with optimized images and lazy loading
+- Works offline with intelligent caching
+
+---
+
+## 💡 Why Gifty?
+
+**The Problem:** Gift-giving is stressful. You guess what people want, end up buying duplicates, and lose the element of surprise when you ask them directly.
+
+**Our Solution:** Gifty brings transparency and coordination to gift-giving while preserving the joy of giving gifts your friends actually want. It's the bridge between "What do you want?" and delightfully surprising someone with the perfect gift.
+
+**For Gift Givers:**
+- No more duplicate gifts at the same party
+- Confidence that your gift is wanted
+- Ability to split expensive gifts with others
+- Peace of mind knowing what to buy
+
+**For Wishlist Owners:**
+- Get exactly what you want without spoiling the surprise
+- Share different wishlists for different occasions
+- See who's buying what (kind of)—they know, you don't
+- Receive gifts you truly love
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Node.js** 18+ and npm/yarn/pnpm
+- **Supabase** account (free tier available at [supabase.com](https://supabase.com))
+- Git
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/gifty.git
+   cd gifty
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env.local` file in the root directory:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+   See [Environment Variables](#environment-variables) section below for details on obtaining these.
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
+
+### Development Commands
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev      # Start development server (localhost:3000)
+npm run build    # Create production build
+npm run lint     # Run ESLint
+npm run start    # Start production server
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🗄️ Local Database Setup (Supabase)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Gifty uses Supabase for authentication and data storage. For local development:
 
-## Learn More
+```bash
+# Install Supabase CLI (if not already installed)
+brew install supabase/tap/supabase  # macOS
+# or
+https://supabase.com/docs/guides/cli/getting-started  # Other platforms
 
-To learn more about Next.js, take a look at the following resources:
+# Start local Supabase instance
+supabase start
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Apply database migrations
+supabase db reset
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Generate TypeScript types from your schema
+supabase gen types typescript --local > src/lib/supabase/types.ts
 
-## Deploy on Vercel
+# Run edge functions locally
+supabase functions serve
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ⚙️ Environment Variables
+
+### Required Variables
+
+| Variable | Description | Where to Get |
+|----------|-------------|--------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | [Supabase Console](https://app.supabase.com) → Settings → API → Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) key | [Supabase Console](https://app.supabase.com) → Settings → API → anon public |
+
+### Optional Variables (Edge Functions)
+
+| Variable | Description | Purpose |
+|----------|-------------|---------|
+| `LINKPREVIEW_API_KEY` | API key for link preview service | Used in edge functions for fetching product metadata from URLs |
+
+### Example `.env.local`
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+For more details, see [CLAUDE.md](./CLAUDE.md).
+
+---
+
+## 🏗️ Tech Stack
+
+Gifty is built with modern, production-proven technologies:
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Frontend** | Next.js 16 (App Router) | React-based framework with SSR and SSG |
+| **Database** | Supabase (PostgreSQL) | Open-source Firebase alternative with RLS |
+| **Authentication** | Supabase Auth | Built-in auth with email/OAuth |
+| **Styling** | Tailwind CSS 4 | Utility-first CSS framework |
+| **UI Components** | shadcn/ui | Accessible component library |
+| **Forms** | React Hook Form + Zod | Type-safe form validation |
+| **State Management** | TanStack Query | Server state management & caching |
+| **Progressive Web App** | next-pwa | PWA capabilities |
+
+### Architecture Highlights
+- **React Server Components** for optimal performance
+- **Row Level Security (RLS)** for fine-grained data access control
+- **Edge Functions** for serverless operations (link preview fetching)
+- **Soft deletes** for claim history audit trails
+- **Claim splitting** for cost-sharing gifts
+
+For detailed architecture information, see [CLAUDE.md](./CLAUDE.md).
+
+---
+
+## 📚 Project Structure
+
+```
+gifty/
+├── src/
+│   ├── app/                 # Next.js App Router pages
+│   │   ├── (auth)/         # Public auth pages (login, signup)
+│   │   ├── (app)/          # Protected app pages (dashboard, wishlists, friends)
+│   │   ├── globals.css     # Global styles and CSS variables
+│   │   └── layout.tsx      # Root layout
+│   ├── components/          # React components
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── wishlists/      # Wishlist-specific components
+│   │   ├── friends/        # Friend management components
+│   │   └── navigation/     # Nav components
+│   ├── lib/                 # Utilities and helpers
+│   │   ├── actions/        # Server actions (mutations)
+│   │   ├── queries/        # TanStack Query hooks
+│   │   ├── supabase/       # Supabase client configuration
+│   │   └── utils.ts        # Utility functions
+│   └── middleware.ts        # Auth middleware
+├── supabase/
+│   ├── migrations/          # Database schema migrations
+│   └── functions/           # Edge functions
+└── public/                  # Static assets
+```
+
+For more details, see [CLAUDE.md](./CLAUDE.md).
+
+---
+
+## 🎨 Design System
+
+Gifty features a warm, playful aesthetic with:
+- **Warm cream backgrounds** with coral accents
+- **Soft shadows** for depth
+- **Smooth animations** for delightful interactions
+- **Accessible components** following WCAG guidelines
+
+See [STYLE_GUIDE.md](./STYLE_GUIDE.md) for comprehensive design documentation.
+
+---
+
+## 🤝 Contributing
+
+We'd love your contributions! Whether it's bug fixes, features, or documentation, see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to get started.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+---
+
+## 🎬 Demo & Screenshots
+
+Coming soon! Check back for demo videos and screenshots showcasing Gifty's features.
+
+---
+
+## 💬 Support & Feedback
+
+- **Issues & Bug Reports:** [GitHub Issues](https://github.com/yourusername/gifty/issues)
+- **Feature Requests:** [GitHub Discussions](https://github.com/yourusername/gifty/discussions)
+- **Email Support:** [email protected]
+
+---
+
+**Made with ❤️ for gift-givers everywhere.**
