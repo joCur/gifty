@@ -50,4 +50,5 @@ public/workbox-*.js.map
 # Auto Claude data directory
 .auto-claude/
 .auto-claude-status
+.auto-claude-security
 .claude_settings.json
