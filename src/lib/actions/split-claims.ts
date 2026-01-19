@@ -632,6 +632,37 @@ export async function confirmSplitClaim(splitClaimId: string) {
       return { error: error.message };
     }
 
+    // Send split_confirmed notification to all participants
+    try {
+      // Get item details
+      const { data: item } = await supabase
+        .from("wishlist_items")
+        .select("id, title, image_url, wishlist_id")
+        .eq("id", splitClaim.item_id)
+        .single();
+
+      // Get wishlist details
+      const { data: wishlist } = await supabase
+        .from("wishlists")
+        .select("id, name")
+        .eq("id", item?.wishlist_id || "")
+        .single();
+
+      if (item && wishlist) {
+        await notifySplitParticipants(splitClaimId, user.id, "split_confirmed", {
+          split_claim_id: splitClaimId,
+          item_id: item.id,
+          item_title: item.title,
+          item_image_url: item.image_url,
+          wishlist_id: wishlist.id,
+          wishlist_name: wishlist.name,
+          confirmed_at: new Date().toISOString(),
+        });
+      }
+    } catch (notifError) {
+      console.error("Failed to send split confirmed notification:", notifError);
+    }
+
     revalidatePath(`/friends`);
     return { success: true };
   } catch {
