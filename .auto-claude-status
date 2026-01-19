@@ -3,23 +3,23 @@
   "spec": "001-finishing-notifications-v2",
   "state": "building",
   "subtasks": {
-    "completed": 0,
+    "completed": 4,
     "total": 12,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Verify Existing Implementation",
+    "current": "Add Split Claim Notifications",
     "id": null,
-    "total": 2
+    "total": 5
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 1,
+    "number": 5,
     "started_at": "2026-01-19T11:33:19.969990"
   },
-  "last_update": "2026-01-19T11:33:20.033476"
+  "last_update": "2026-01-19T11:42:34.320671"
 }

@@ -7,7 +7,10 @@ import { recordClaimHistoryEvent } from "./claim-history";
 import type { SplitClaimWithParticipants } from "@/lib/supabase/types.custom";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types.custom";
-import { notifyWishlistViewers } from "@/lib/notifications/builder";
+import {
+  notifyWishlistViewers,
+  notifySplitParticipants,
+} from "@/lib/notifications/builder";
 
 // Constants
 const MIN_SPLIT_PARTICIPANTS = 2;
@@ -366,6 +369,46 @@ export async function joinSplitClaim(splitClaimId: string, wishlistId: string) {
       wishlist_id: wishlistId,
       is_initiator: false,
     });
+
+    // Send split_joined notification to other participants
+    try {
+      // Get item details
+      const { data: item } = await supabase
+        .from("wishlist_items")
+        .select("id, title, image_url")
+        .eq("id", splitClaim.item_id)
+        .single();
+
+      // Get wishlist details
+      const { data: wishlist } = await supabase
+        .from("wishlists")
+        .select("id, name")
+        .eq("id", wishlistId)
+        .single();
+
+      // Get joiner profile
+      const { data: joinerProfile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+
+      if (item && wishlist) {
+        await notifySplitParticipants(splitClaimId, user.id, "split_joined", {
+          split_claim_id: splitClaimId,
+          item_id: item.id,
+          item_title: item.title,
+          item_image_url: item.image_url,
+          wishlist_id: wishlist.id,
+          wishlist_name: wishlist.name,
+          joiner_id: user.id,
+          joiner_name: joinerProfile?.display_name || "Someone",
+          joined_at: new Date().toISOString(),
+        });
+      }
+    } catch (notifError) {
+      console.error("Failed to send split joined notification:", notifError);
+    }
 
     revalidatePath(`/friends`);
     revalidatePath(`/dashboard`);
