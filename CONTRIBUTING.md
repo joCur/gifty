@@ -193,11 +193,8 @@ npm run lint
 # Fix auto-fixable lint issues
 npm run lint -- --fix
 
-# Run type checking
-npm run type-check
-
-# Run tests (if available)
-npm run test
+# Build and verify (includes TypeScript type checking)
+npm run build
 ```
 
 **Pro tip:** Use git hooks to prevent commits with linting errors:
@@ -546,13 +543,10 @@ npm run lint
 # 2. Fix auto-fixable lint issues
 npm run lint -- --fix
 
-# 3. Type checking - ensures TypeScript types are correct
-npm run type-check
-
-# 4. Build - verify the project builds successfully
+# 3. Build - verify the project builds successfully (includes TypeScript type checking)
 npm run build
 
-# 5. Run the dev server and test manually
+# 4. Run the dev server and test manually
 npm run dev
 ```
 
@@ -669,13 +663,13 @@ export async function cancelClaim(claimId: string) {
 
 ### Type Checking
 
-Run TypeScript type checking before submitting:
+TypeScript type checking is performed automatically during the build process:
 
 ```bash
-npm run type-check
+npm run build
 ```
 
-This checks the entire codebase for TypeScript errors. Fix all errors before submitting your PR.
+This checks the entire codebase for TypeScript errors. Fix all errors before submitting your PR. The build will fail if there are any type errors, so running `npm run build` is the best way to verify type safety.
 
 ### Testing Guidelines
 
@@ -753,8 +747,7 @@ When your PR is reviewed:
 Before submitting your PR, verify:
 
 - [ ] `npm run lint` passes with no errors
-- [ ] `npm run type-check` passes with no errors
-- [ ] `npm run build` succeeds without warnings
+- [ ] `npm run build` succeeds without warnings or errors
 - [ ] Manually tested in development server
 - [ ] Tested in production build
 - [ ] No `console.log`, `debugger`, or debug code left
