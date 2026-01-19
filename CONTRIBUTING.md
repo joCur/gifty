@@ -10,6 +10,9 @@ We're excited to have you contribute to Gifty! This guide will help you get star
 - [Development Workflow](#development-workflow)
 - [Pull Request Process](#pull-request-process)
 - [Project Conventions](#project-conventions)
+  - [Code Style](#code-style)
+  - [Design System and Styling](#design-system-and-styling)
+  - [Naming Conventions](#naming-conventions)
 - [Testing and Quality Standards](#testing-and-quality-standards)
 - [Common Development Tasks](#common-development-tasks)
 - [Troubleshooting](#troubleshooting)
@@ -380,11 +383,140 @@ export function MyComponent() {
 }
 ```
 
+#### State Management with TanStack Query
+
+For client-side data fetching and caching, use TanStack Query with the query key factory pattern:
+
+**Query Keys** (`src/lib/queries/keys.ts`):
+```typescript
+// Define hierarchical query keys
+export const queryKeys = {
+  feed: {
+    all: ["feed"] as const,
+    friends: () => [...queryKeys.feed.all, "friends"] as const,
+    detail: (id: string) => [...queryKeys.feed.all, "detail", id] as const,
+  },
+  wishlists: {
+    all: ["wishlists"] as const,
+    lists: () => [...queryKeys.wishlists.all, "lists"] as const,
+    detail: (id: string) => [...queryKeys.wishlists.all, "detail", id] as const,
+  },
+} as const;
+```
+
+**Query Hooks** (`src/lib/queries/hooks.ts`):
+```typescript
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { queryKeys } from './keys';
+
+export function useFriendActivityFeed() {
+  return useInfiniteQuery({
+    queryKey: queryKeys.feed.friends(),
+    queryFn: ({ pageParam }) => getFriendActivityFeed(pageParam),
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  });
+}
+
+export function useWishlist(id: string) {
+  return useQuery({
+    queryKey: queryKeys.wishlists.detail(id),
+    queryFn: () => getWishlist(id),
+  });
+}
+```
+
+#### Supabase Client Setup
+
+Use the appropriate client for your context:
+
+**Server Components & Server Actions**:
+```typescript
+import { createClient } from "@/lib/supabase/server";
+
+export async function getWishlists() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from('wishlists')
+    .select('*')
+    .eq('user_id', user?.id);
+
+  return data;
+}
+```
+
+**Client Components**:
+```typescript
+import { createClient } from "@/lib/supabase/client";
+
+export function WishlistList() {
+  const supabase = createClient();
+  const { data } = useQuery({
+    queryKey: queryKeys.wishlists.lists(),
+    queryFn: async () => {
+      const { data } = await supabase.from('wishlists').select();
+      return data;
+    },
+  });
+
+  return <div>{/* render wishlists */}</div>;
+}
+```
+
 #### TypeScript Usage
 - All files should be TypeScript (`.ts` or `.tsx`)
 - Define interfaces for all data structures
 - Use strict types - avoid `any`
 - Keep types in `src/lib/types/`
+- Import generated Supabase types from `@/lib/supabase/types`
+
+Example type definition:
+```typescript
+import type { Database } from '@/lib/supabase/types';
+
+type Wishlist = Database['public']['Tables']['wishlists']['Row'];
+type WishlistInsert = Database['public']['Tables']['wishlists']['Insert'];
+
+export interface CreateWishlistInput {
+  name: string;
+  description?: string;
+  privacy: 'public' | 'friends' | 'private';
+}
+```
+
+### Design System and Styling
+
+For UI design patterns, refer to `STYLE_GUIDE.md`. Key principles:
+
+- **Theme**: Warm, playful aesthetic with cream backgrounds and coral accents
+- **Colors**: Use CSS custom properties (`--background`, `--primary`, `--muted`, etc.)
+- **Components**: Use shadcn/ui components from `src/components/ui/`
+- **Spacing**: Use Tailwind utilities with consistent spacing scale
+- **Icons**: Use Lucide React icons
+- **Animations**: Use `animate-fade-up` for entrances, `animate-blob` for backgrounds
+
+Example styled component:
+```typescript
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+
+export function FeatureCard() {
+  return (
+    <div className="group relative p-8 rounded-3xl bg-card border border-border/50 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-2">
+      <h3 className="font-[family-name:var(--font-outfit)] text-2xl font-bold">
+        Feature Title
+      </h3>
+      <p className="text-muted-foreground mt-2">
+        Feature description goes here.
+      </p>
+      <Button className="mt-4 h-12 rounded-xl">
+        Learn More <ArrowRight className="ml-2 w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
+```
 
 ### Naming Conventions
 
