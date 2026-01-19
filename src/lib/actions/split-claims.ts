@@ -465,6 +465,51 @@ export async function leaveSplitClaim(splitClaimId: string) {
         cancelled_by_initiator: true,
       });
 
+      // Send split_cancelled notification to all participants
+      try {
+        // Get item details
+        const { data: item } = await supabase
+          .from("wishlist_items")
+          .select("id, title, image_url, wishlist_id")
+          .eq("id", splitClaim.item_id)
+          .single();
+
+        // Get wishlist details
+        const { data: wishlist } = await supabase
+          .from("wishlists")
+          .select("id, name")
+          .eq("id", item?.wishlist_id || "")
+          .single();
+
+        // Get initiator profile
+        const { data: initiatorProfile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .single();
+
+        if (item && wishlist) {
+          await notifySplitParticipants(
+            splitClaimId,
+            user.id,
+            "split_cancelled",
+            {
+              split_claim_id: splitClaimId,
+              item_id: item.id,
+              item_title: item.title,
+              item_image_url: item.image_url,
+              wishlist_id: wishlist.id,
+              wishlist_name: wishlist.name,
+              canceller_id: user.id,
+              canceller_name: initiatorProfile?.display_name || "Someone",
+              cancelled_at: new Date().toISOString(),
+            }
+          );
+        }
+      } catch (notifError) {
+        console.error("Failed to send split cancelled notification:", notifError);
+      }
+
       revalidatePath(`/friends`);
       revalidatePath(`/dashboard`);
       revalidatePath(`/claims-history`);
@@ -486,6 +531,46 @@ export async function leaveSplitClaim(splitClaimId: string) {
     await recordClaimHistoryEvent("left_split", undefined, splitClaimId, {
       item_id: splitClaim.item_id,
     });
+
+    // Send split_left notification to other participants
+    try {
+      // Get item details
+      const { data: item } = await supabase
+        .from("wishlist_items")
+        .select("id, title, image_url, wishlist_id")
+        .eq("id", splitClaim.item_id)
+        .single();
+
+      // Get wishlist details
+      const { data: wishlist } = await supabase
+        .from("wishlists")
+        .select("id, name")
+        .eq("id", item?.wishlist_id || "")
+        .single();
+
+      // Get leaver profile
+      const { data: leaverProfile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+
+      if (item && wishlist) {
+        await notifySplitParticipants(splitClaimId, user.id, "split_left", {
+          split_claim_id: splitClaimId,
+          item_id: item.id,
+          item_title: item.title,
+          item_image_url: item.image_url,
+          wishlist_id: wishlist.id,
+          wishlist_name: wishlist.name,
+          leaver_id: user.id,
+          leaver_name: leaverProfile?.display_name || "Someone",
+          left_at: new Date().toISOString(),
+        });
+      }
+    } catch (notifError) {
+      console.error("Failed to send split left notification:", notifError);
+    }
 
     revalidatePath(`/friends`);
     revalidatePath(`/dashboard`);
