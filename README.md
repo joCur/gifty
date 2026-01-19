@@ -201,60 +201,216 @@ For more architecture details, see [CLAUDE.md](./CLAUDE.md).
 
 ---
 
-## 🏗️ Tech Stack
+## 🏗️ Tech Stack & Architecture
 
-Gifty is built with modern, production-proven technologies:
+Gifty is built with modern, production-proven technologies designed for scalability, security, and user experience:
+
+### Core Technologies
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| **Frontend** | Next.js 16 (App Router) | React-based framework with SSR and SSG |
-| **Database** | Supabase (PostgreSQL) | Open-source Firebase alternative with RLS |
-| **Authentication** | Supabase Auth | Built-in auth with email/OAuth |
-| **Styling** | Tailwind CSS 4 | Utility-first CSS framework |
-| **UI Components** | shadcn/ui | Accessible component library |
-| **Forms** | React Hook Form + Zod | Type-safe form validation |
-| **State Management** | TanStack Query | Server state management & caching |
-| **Progressive Web App** | next-pwa | PWA capabilities |
+| **Framework** | Next.js 16 (App Router) | React-based framework with Server Components, SSR, and SSG |
+| **Database** | Supabase (PostgreSQL) | Open-source Firebase alternative with Row Level Security |
+| **Authentication** | Supabase Auth | Built-in auth with email/OAuth support |
+| **Styling** | Tailwind CSS 4 | Utility-first CSS framework for responsive design |
+| **UI Components** | shadcn/ui | Accessible component library (new-york style) |
+| **Forms** | React Hook Form + Zod | Type-safe form validation and state management |
+| **State Management** | TanStack Query | Server state management with intelligent caching |
+| **Progressive Web App** | next-pwa | PWA capabilities for app-like experience |
 
 ### Architecture Highlights
-- **React Server Components** for optimal performance
-- **Row Level Security (RLS)** for fine-grained data access control
-- **Edge Functions** for serverless operations (link preview fetching)
-- **Soft deletes** for claim history audit trails
-- **Claim splitting** for cost-sharing gifts
 
-For detailed architecture information, see [CLAUDE.md](./CLAUDE.md).
+**Server-Side:**
+- **React Server Components** for optimal performance and reduced JavaScript
+- **Server Actions** in `src/lib/actions/` for all data mutations
+- **Row Level Security (RLS)** for fine-grained, user-specific data access control
+- **Edge Functions** for serverless operations (e.g., link preview metadata fetching)
+
+**Data Management:**
+- **Soft deletes** for claim history audit trails and data preservation
+- **Claim splitting** system for cost-sharing expensive gifts
+- **Claim history events** table for tracking lifecycle changes
+- **Notification system** for friend requests, claims, and social interactions
+
+**Client-Side:**
+- **TanStack Query** with query key factories for efficient data fetching and caching
+- **Custom hooks** for reusable data operations
+- **Type-safe patterns** with TypeScript throughout
+
+For detailed implementation patterns and architecture decisions, see [CLAUDE.md](./CLAUDE.md).
 
 ---
 
 ## 📚 Project Structure
 
+Gifty follows a modular, feature-based architecture that makes it easy to navigate and extend:
+
 ```
 gifty/
 ├── src/
-│   ├── app/                 # Next.js App Router pages
-│   │   ├── (auth)/         # Public auth pages (login, signup)
-│   │   ├── (app)/          # Protected app pages (dashboard, wishlists, friends)
-│   │   ├── globals.css     # Global styles and CSS variables
-│   │   └── layout.tsx      # Root layout
-│   ├── components/          # React components
-│   │   ├── ui/             # shadcn/ui components
-│   │   ├── wishlists/      # Wishlist-specific components
-│   │   ├── friends/        # Friend management components
-│   │   └── navigation/     # Nav components
-│   ├── lib/                 # Utilities and helpers
-│   │   ├── actions/        # Server actions (mutations)
-│   │   ├── queries/        # TanStack Query hooks
-│   │   ├── supabase/       # Supabase client configuration
-│   │   └── utils.ts        # Utility functions
-│   └── middleware.ts        # Auth middleware
+│   ├── app/
+│   │   ├── (auth)/                  # 📖 Public authentication pages
+│   │   │   ├── login/
+│   │   │   ├── signup/
+│   │   │   └── reset-password/
+│   │   ├── (app)/                   # 🔒 Protected app pages (require authentication)
+│   │   │   ├── dashboard/           # User's main dashboard
+│   │   │   ├── wishlists/           # Wishlist management
+│   │   │   ├── friends/             # Friend management & browse
+│   │   │   └── profile/             # User profile settings
+│   │   ├── globals.css              # 🎨 Global styles, CSS variables, animations
+│   │   ├── layout.tsx               # 🌐 Root layout with fonts & providers
+│   │   └── favicon.ico              # App icon
+│   │
+│   ├── components/
+│   │   ├── ui/                      # 📦 shadcn/ui base components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   └── ... (other UI components)
+│   │   ├── wishlists/               # 🎁 Wishlist feature components
+│   │   │   ├── wishlist-card.tsx
+│   │   │   ├── item-form.tsx
+│   │   │   └── claim-item-dialog.tsx
+│   │   ├── friends/                 # 👥 Friend management components
+│   │   │   ├── friend-request-card.tsx
+│   │   │   ├── add-friend-dialog.tsx
+│   │   │   └── friend-list.tsx
+│   │   ├── navigation/              # 🧭 Navigation components
+│   │   │   ├── sidebar.tsx
+│   │   │   ├── mobile-nav.tsx
+│   │   │   └── nav-items.tsx
+│   │   └── providers/               # 🔌 React providers
+│   │       └── query-provider.tsx   # TanStack Query provider
+│   │
+│   ├── lib/
+│   │   ├── actions/                 # 🔄 Server actions for data mutations
+│   │   │   ├── wishlists.ts        # Wishlist mutations
+│   │   │   ├── friends.ts          # Friend management mutations
+│   │   │   ├── items.ts            # Wishlist item mutations
+│   │   │   ├── claims.ts           # Claim management mutations
+│   │   │   ├── profile.ts          # Profile mutations
+│   │   │   ├── feed.ts             # Activity feed operations
+│   │   │   └── notifications.ts    # Notification operations
+│   │   │
+│   │   ├── queries/                 # 📊 TanStack Query hooks & utilities
+│   │   │   ├── keys.ts             # Query key factory (prevents duplicate fetches)
+│   │   │   ├── hooks.ts            # Custom query hooks
+│   │   │   └── ... (feature-specific hooks)
+│   │   │
+│   │   ├── types/                   # 📝 TypeScript type definitions
+│   │   │   ├── claims.ts           # Claim-related types
+│   │   │   ├── feed.ts             # Activity feed types
+│   │   │   └── ... (other types)
+│   │   │
+│   │   ├── supabase/
+│   │   │   ├── server.ts           # Supabase client for server components
+│   │   │   ├── client.ts           # Supabase client for client components
+│   │   │   ├── middleware.ts       # Auth session & redirect middleware
+│   │   │   └── types.ts            # Auto-generated TypeScript types from DB
+│   │   │
+│   │   ├── utils.ts                # 🛠️ General utility functions
+│   │   │   ├── cn() - CSS class merging
+│   │   │   ├── getInitials() - User initials
+│   │   │   └── extractItemCount() - Metadata extraction
+│   │   │
+│   │   └── constants.ts            # Application-wide constants
+│   │
+│   └── middleware.ts                # 🔐 Auth session management
+│
 ├── supabase/
-│   ├── migrations/          # Database schema migrations
-│   └── functions/           # Edge functions
-└── public/                  # Static assets
+│   ├── migrations/                  # 📚 Database schema migrations
+│   │   ├── 001_initial_schema.sql  # Tables: profiles, wishlists, items
+│   │   ├── 002_friendships.sql     # Friend relationships
+│   │   ├── 003_claims.sql          # Claim system
+│   │   └── ... (other migrations)
+│   │
+│   └── functions/                   # ⚡ Edge functions (serverless)
+│       └── fetch-link-metadata/    # URL preview metadata extraction
+│
+├── public/                          # 📁 Static assets
+│   └── (images, icons, fonts, etc.)
+│
+├── .env.example                     # 📝 Environment variables template
+├── .gitignore                       # Git ignore rules
+├── next.config.ts                  # Next.js configuration
+├── tsconfig.json                   # TypeScript configuration
+├── tailwind.config.ts              # Tailwind CSS configuration
+└── package.json                    # Dependencies & scripts
 ```
 
-For more details, see [CLAUDE.md](./CLAUDE.md).
+### Key Directories Explained
+
+**`src/app`** - Next.js App Router pages
+- Route groups in parentheses: `(auth)` for public routes, `(app)` for protected routes
+- File-based routing: `page.tsx` creates routes automatically
+- Layouts are inherited from parent directories
+
+**`src/lib/actions`** - Server Actions for data mutations
+- All mutations happen here (create, update, delete wishlists, items, claims, etc.)
+- Pattern: Get user session → Perform database operation → Revalidate cache
+- Returns `{ success, error?, data? }` for consistent error handling
+
+**`src/lib/queries`** - TanStack Query configuration
+- Query key factory prevents duplicate network requests
+- Custom hooks with `useQuery` and `useInfiniteQuery` for data fetching
+- Automatic caching and invalidation strategies
+
+**`supabase/migrations`** - Database schema
+- Sequential migrations define the database structure
+- Includes Row Level Security (RLS) policies to protect user data
+- Tables: profiles, wishlists, wishlist_items, friendships, item_claims, split_claims, notifications, etc.
+
+**`supabase/functions`** - Edge functions
+- Serverless functions that run on Supabase infrastructure
+- Used for external API calls (e.g., fetching link metadata)
+- Can be called from server actions or directly from client code
+
+### Data Flow
+
+1. **User interacts with UI** → Client component renders
+2. **User action triggered** → Server action called (mutation)
+3. **Server action executes** → Validates user, updates database
+4. **Cache invalidated** → `revalidatePath()` clears cached data
+5. **UI updates** → TanStack Query refetches and updates UI
+
+### Database Schema
+
+Gifty's database is built on PostgreSQL with Row Level Security (RLS) policies to protect user data:
+
+**Core Tables:**
+- **`profiles`** - User profiles (extends Supabase `auth.users`)
+- **`wishlists`** - Wishlists with privacy settings (public/friends/private/selected_friends)
+- **`wishlist_items`** - Items in wishlists (url, title, price, image, etc.)
+- **`friendships`** - Friend relationships (pending/accepted/declined status)
+
+**Claiming & Splitting:**
+- **`item_claims`** - Gift claims with status: `active`/`cancelled`/`fulfilled` (soft deletes)
+- **`split_claims`** - For sharing gift costs with multiple people on one item
+- **`claim_history_events`** - Audit log for claim lifecycle events
+
+**Social Features:**
+- **`notifications`** - User notifications for friend requests, claims, and activities
+
+**Security:**
+- Row Level Security (RLS) policies on all tables
+- **Key privacy feature:** Wishlist owners cannot see who claimed their items (keeps gifts secret!)
+- Policies ensure users can only access their own data and shared/public wishlists
+
+### Claim System Details
+
+The claim system uses soft deletes with status tracking instead of hard deletion:
+
+- **`active`** - User is currently buying this item
+- **`cancelled`** - User decided not to buy it (preserved in history)
+- **`fulfilled`** - Gift was received (marks as complete)
+
+**Split Claims** allow multiple users to contribute to expensive gifts:
+- One item can be claimed by multiple people
+- Each person contributes a portion of the cost
+- The item shows total contributors and remaining amount needed
+
+For detailed database migrations and RLS policies, see [CLAUDE.md](./CLAUDE.md).
 
 ---
 
@@ -267,6 +423,113 @@ Gifty features a warm, playful aesthetic with:
 - **Accessible components** following WCAG guidelines
 
 See [STYLE_GUIDE.md](./STYLE_GUIDE.md) for comprehensive design documentation.
+
+---
+
+## 🔧 Development Patterns
+
+### Server Actions Pattern
+
+All data mutations (create, update, delete) happen in server actions located in `src/lib/actions/`:
+
+```typescript
+// Example: src/lib/actions/wishlists.ts
+export async function createWishlist(formData: FormData) {
+  // 1. Get authenticated user
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  // 2. Perform database operation
+  const { data, error } = await supabase
+    .from("wishlists")
+    .insert({ user_id: user.id, ... });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  // 3. Revalidate cache
+  revalidatePath("/app/wishlists");
+
+  // 4. Return consistent response
+  return { success: true, data };
+}
+```
+
+### TanStack Query Pattern
+
+For client-side data fetching, use the query key factory to prevent duplicate requests:
+
+```typescript
+// src/lib/queries/keys.ts - Define query keys
+export const queryKeys = {
+  wishlists: {
+    all: ["wishlists"] as const,
+    myWishlists: () => [...queryKeys.wishlists.all, "my"] as const,
+    detail: (id: string) => [...queryKeys.wishlists.all, id] as const,
+  },
+} as const;
+
+// src/lib/queries/hooks.ts - Create hooks
+export function useMyWishlists() {
+  return useQuery({
+    queryKey: queryKeys.wishlists.myWishlists(),
+    queryFn: () => fetchMyWishlists(),
+  });
+}
+```
+
+### Server Components vs Client Components
+
+- **Server Components** (default): For pages and read-only layouts - better performance
+- **Client Components** (`"use client"`): For interactive features - form inputs, animations, etc.
+
+```typescript
+// Server component - no "use client"
+export default async function WishlistPage() {
+  const wishlists = await fetchWishlists();
+  return <WishlistList data={wishlists} />;
+}
+
+// Client component - interactive
+"use client"
+export function WishlistForm() {
+  const [title, setTitle] = useState("");
+  // ...
+}
+```
+
+### Form Validation with React Hook Form + Zod
+
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const schema = z.object({
+  title: z.string().min(1, "Title is required"),
+  url: z.string().url("Must be a valid URL").optional(),
+});
+
+export function ItemForm() {
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: { title: "", url: "" },
+  });
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <input {...form.register("title")} />
+    </form>
+  );
+}
+```
+
+For comprehensive code examples and detailed patterns, see [CLAUDE.md](./CLAUDE.md).
 
 ---
 
