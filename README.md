@@ -109,24 +109,45 @@ npm run start    # Start production server
 
 Gifty uses Supabase for authentication and data storage. For local development:
 
-```bash
-# Install Supabase CLI (if not already installed)
-brew install supabase/tap/supabase  # macOS
-# or
-https://supabase.com/docs/guides/cli/getting-started  # Other platforms
+### Install Supabase CLI
 
-# Start local Supabase instance
+**macOS (Homebrew):**
+```bash
+brew install supabase/tap/supabase
+```
+
+**Windows (Scoop):**
+```bash
+scoop install supabase
+```
+
+**Linux/Other platforms:**
+Visit [Supabase CLI documentation](https://supabase.com/docs/guides/cli/getting-started) for installation instructions.
+
+### Start Local Development
+
+Once installed, run these commands to set up your local database:
+
+```bash
+# Start local Supabase instance (first time only)
 supabase start
 
-# Apply database migrations
+# Reset database with migrations
 supabase db reset
 
 # Generate TypeScript types from your schema
 supabase gen types typescript --local > src/lib/supabase/types.ts
 
-# Run edge functions locally
+# Run edge functions locally (in another terminal)
 supabase functions serve
 ```
+
+After running `supabase start`, local Supabase will be available at:
+- **API URL:** http://localhost:54321
+- **Studio URL:** http://localhost:54323
+- **Credentials:** Check terminal output for anon key and other details
+
+**Note:** Update your `.env.local` to use the local Supabase URLs when developing locally.
 
 ---
 
