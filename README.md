@@ -6,6 +6,31 @@ Never wonder what to gift again. Share wishlists with friends and family, see wh
 
 ---
 
+## 📖 Table of Contents
+
+- [🎁 Key Features](#-key-features)
+- [💡 Why Gifty?](#-why-gifty)
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Development Commands](#development-commands)
+- [🗄️ Local Database Setup](#️-local-database-setup-supabase)
+- [⚙️ Environment Variables](#️-environment-variables)
+- [🏗️ Tech Stack & Architecture](#️-tech-stack--architecture)
+- [📚 Project Structure](#-project-structure)
+  - [Key Directories Explained](#key-directories-explained)
+  - [Data Flow](#data-flow)
+  - [Database Schema](#database-schema)
+  - [Claim System Details](#claim-system-details)
+- [🎨 Design System](#-design-system)
+- [🔧 Development Patterns](#-development-patterns)
+- [🤝 Contributing](#-contributing)
+- [📝 License](#-license)
+- [🎬 Demo & Screenshots](#-demo--screenshots)
+- [💬 Support & Feedback](#-support--feedback)
+
+---
+
 ## 🎁 Key Features
 
 ### ✨ Create & Share Wishlists
@@ -38,6 +63,8 @@ Never wonder what to gift again. Share wishlists with friends and family, see wh
 - Fast, snappy performance with optimized images and lazy loading
 - Works offline with intelligent caching
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 💡 Why Gifty?
@@ -58,6 +85,8 @@ Never wonder what to gift again. Share wishlists with friends and family, see wh
 - See who's buying what (kind of)—they know, you don't
 - Receive gifts you truly love
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 🚀 Quick Start
@@ -71,8 +100,8 @@ Never wonder what to gift again. Share wishlists with friends and family, see wh
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/gifty.git
-   cd gifty
+   git clone https://github.com/jonascurth/giftify.git
+   cd giftify
    ```
 
 2. **Install dependencies**
@@ -106,6 +135,8 @@ npm run build    # Create production build
 npm run lint     # Run ESLint
 npm run start    # Start production server
 ```
+
+[(↑ back to top)](#-table-of-contents)
 
 ---
 
@@ -199,6 +230,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<local-anon-key-from-supabase-output>
 
 For more architecture details, see [CLAUDE.md](./CLAUDE.md).
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 🏗️ Tech Stack & Architecture
@@ -238,6 +271,8 @@ Gifty is built with modern, production-proven technologies designed for scalabil
 - **Type-safe patterns** with TypeScript throughout
 
 For detailed implementation patterns and architecture decisions, see [CLAUDE.md](./CLAUDE.md).
+
+[(↑ back to top)](#-table-of-contents)
 
 ---
 
@@ -412,6 +447,8 @@ The claim system uses soft deletes with status tracking instead of hard deletion
 
 For detailed database migrations and RLS policies, see [CLAUDE.md](./CLAUDE.md).
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 🎨 Design System
@@ -423,6 +460,8 @@ Gifty features a warm, playful aesthetic with:
 - **Accessible components** following WCAG guidelines
 
 See [STYLE_GUIDE.md](./STYLE_GUIDE.md) for comprehensive design documentation.
+
+[(↑ back to top)](#-table-of-contents)
 
 ---
 
@@ -531,11 +570,15 @@ export function ItemForm() {
 
 For comprehensive code examples and detailed patterns, see [CLAUDE.md](./CLAUDE.md).
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 🤝 Contributing
 
 We'd love your contributions! Whether it's bug fixes, features, or documentation, see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to get started.
+
+[(↑ back to top)](#-table-of-contents)
 
 ---
 
@@ -543,19 +586,25 @@ We'd love your contributions! Whether it's bug fixes, features, or documentation
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 🎬 Demo & Screenshots
 
 Coming soon! Check back for demo videos and screenshots showcasing Gifty's features.
 
+[(↑ back to top)](#-table-of-contents)
+
 ---
 
 ## 💬 Support & Feedback
 
-- **Issues & Bug Reports:** [GitHub Issues](https://github.com/yourusername/gifty/issues)
-- **Feature Requests:** [GitHub Discussions](https://github.com/yourusername/gifty/discussions)
-- **Email Support:** [email protected]
+- **Issues & Bug Reports:** [GitHub Issues](https://github.com/jonascurth/giftify/issues)
+- **Feature Requests:** [GitHub Discussions](https://github.com/jonascurth/giftify/discussions)
+- **Documentation:** Check [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines
+
+[(↑ back to top)](#-table-of-contents)
 
 ---
 

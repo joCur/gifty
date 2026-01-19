@@ -2,6 +2,8 @@
 
 We're excited to have you contribute to Gifty! This guide will help you get started with understanding our development process, code standards, and how to submit your contributions.
 
+**New to Gifty?** Start with [README.md](./README.md) to understand what the project does.
+
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
@@ -531,63 +533,237 @@ export function FeatureCard() {
 
 ## Testing and Quality Standards
 
+All code submitted to Gifty must meet strict quality standards. These standards help ensure the codebase remains maintainable, secure, and reliable.
+
+### Pre-Commit Quality Checks
+
+Before submitting a PR, you **must** run these quality checks locally:
+
+```bash
+# 1. Run linter - catches code style and quality issues
+npm run lint
+
+# 2. Fix auto-fixable lint issues
+npm run lint -- --fix
+
+# 3. Type checking - ensures TypeScript types are correct
+npm run type-check
+
+# 4. Build - verify the project builds successfully
+npm run build
+
+# 5. Run the dev server and test manually
+npm run dev
+```
+
+**Do not submit a PR if any of these checks fail.** GitHub Actions will automatically verify these on your PR, and it will block merge if checks fail.
+
+### ESLint Standards
+
+The project uses ESLint to enforce code quality. Our ESLint configuration enforces:
+
+- **Naming conventions**: camelCase for variables, PascalCase for components
+- **No unused variables or imports**: Keep code clean and maintainable
+- **Consistent code style**: Matches the project's established patterns
+- **Security best practices**: Prevents common vulnerabilities
+- **Performance warnings**: Catches potential optimization issues
+- **Accessibility standards**: Ensures components are accessible to all users
+
+**Auto-fixing issues:**
+```bash
+npm run lint -- --fix
+```
+
+This command automatically fixes most common issues. Review the changes before committing.
+
 ### Code Quality Requirements
 
-Before submitting a PR, ensure:
+#### No Debug Code in Production
 
-1. **Linting passes**
-   ```bash
-   npm run lint
-   ```
+Never commit debug code to the repository:
 
-2. **Type checking passes**
-   ```bash
-   npm run type-check
-   ```
+```typescript
+// ❌ Don't do this
+console.log('debugging:', variable);
+console.warn('test');
+debugger;
 
-3. **Code is formatted**
-   ```bash
-   npm run lint -- --fix
-   ```
+// ✅ Use meaningful logging only for user-facing issues
+if (!user) {
+  console.error('User authentication failed');
+}
+```
+
+All `console.log`, `console.warn`, `console.debug`, and `debugger` statements must be removed before submitting a PR.
+
+#### TypeScript Type Safety
+
+Maintain strict TypeScript checking:
+
+```typescript
+// ❌ Never use 'any' type
+const data: any = response;
+
+// ✅ Define proper types
+type ApiResponse = {
+  success: boolean;
+  data: Wishlist[];
+  error?: string;
+};
+
+const data: ApiResponse = response;
+```
+
+- No `any` types - always use specific types
+- No explicit `@ts-ignore` comments - fix the type issue instead
+- Define interfaces for all data structures
+- Use generated Supabase types from `@/lib/supabase/types`
+
+#### Error Handling
+
+Always handle errors gracefully:
+
+```typescript
+// ❌ Don't ignore errors
+const { data } = await supabase.from('wishlists').select();
+
+// ✅ Check for errors and provide feedback
+const { data, error } = await supabase.from('wishlists').select();
+if (error) {
+  console.error('Failed to fetch wishlists:', error.message);
+  return { success: false, error: error.message };
+}
+```
+
+**Best practices:**
+- Always check error objects returned from Supabase
+- Return meaningful error messages to users
+- Use try-catch for async/await operations
+- Never expose sensitive error information to users
+
+#### Code Comments and Documentation
+
+- Add JSDoc comments to functions explaining parameters, return values, and usage
+- Explain **why** code does something complex, not what it does (code is self-explanatory)
+- Update comments when you change code behavior
+- Remove outdated comments when refactoring
+
+```typescript
+// ✅ Good: Explains the why
+/**
+ * Claims are soft-deleted rather than hard-deleted to preserve audit history
+ * and prevent accidental data loss. This function marks a claim as cancelled.
+ */
+export async function cancelClaim(claimId: string) {
+  // ...
+}
+
+// ❌ Bad: Obvious from code
+/**
+ * Update the claim status to cancelled
+ */
+export async function cancelClaim(claimId: string) {
+  // ...
+}
+```
+
+### Type Checking
+
+Run TypeScript type checking before submitting:
+
+```bash
+npm run type-check
+```
+
+This checks the entire codebase for TypeScript errors. Fix all errors before submitting your PR.
 
 ### Testing Guidelines
 
+While we don't currently have automated tests configured, we expect contributors to:
+
+1. **Manually test changes thoroughly** in the development environment
+2. **Test edge cases**: empty states, error states, loading states
+3. **Test across browsers**: Chrome, Firefox, Safari, and Edge
+4. **Test on mobile devices**: Use DevTools mobile emulation or real devices
+5. **Test your feature against the acceptance criteria**: Ensure it meets the requirements
+
+For future tests, we will follow these principles:
 - Write tests for new features and bug fixes
-- Aim for meaningful test coverage
-- Tests should verify behavior, not implementation
-- Use descriptive test names
+- Aim for meaningful test coverage (behavior-focused, not coverage metrics)
+- Tests should verify **behavior**, not implementation details
+- Use descriptive test names that explain what is being tested
+- Keep tests maintainable - refactor test code like production code
 
-### ESLint and Code Formatting
+### Production Build Verification
 
-The project uses ESLint for code quality. Common issues and fixes:
+Always verify your changes work in a production build:
 
 ```bash
-# Check for issues
-npm run lint
-
-# Auto-fix issues
-npm run lint -- --fix
-
-# Check specific file
-npm run lint src/components/MyComponent.tsx
+npm run build
+npm run start
 ```
+
+Then test the production build at [http://localhost:3000](http://localhost:3000). This catches optimization and build issues that don't appear in development mode.
 
 ### Breaking Changes Policy
 
-Avoid breaking changes when possible. If a breaking change is necessary:
+Avoid breaking changes whenever possible. If a breaking change is necessary:
 
-1. Document it clearly in the PR description
-2. Add migration guide in the commit message
-3. Update relevant documentation
-4. Consider providing a deprecation period
+1. **Get approval first**: Discuss with maintainers before making the change
+2. **Document clearly**: Explain what changed and why in the PR description
+3. **Provide migration guide**: Add step-by-step instructions for how to update code
+4. **Consider deprecation**: If possible, deprecate the old API before removing it
+5. **Update all docs**: Update README.md, CONTRIBUTING.md, and code comments
+6. **Mention in commit message**: Include "BREAKING CHANGE:" in the commit
+
+Example commit message:
+```
+refactor: Update claim status API
+
+BREAKING CHANGE: The `status` field now uses enum values ('active',
+'cancelled', 'fulfilled') instead of strings. Update your code:
+- Replace status strings with enum values
+- See migration guide in PR for more details
+```
 
 ### Documentation Updates
 
-When you change code behavior:
-- Update JSDoc comments in the code
-- Update relevant sections in `README.md`
-- Update type definitions
-- Add examples if introducing new patterns
+When you change code behavior or add new features:
+
+1. **Update JSDoc comments** in the code with parameter and return type documentation
+2. **Update README.md** if changes affect setup or usage
+3. **Update CONTRIBUTING.md** if changes affect development process or patterns
+4. **Update CLAUDE.md** if changes affect architecture or patterns
+5. **Add code examples** when introducing new patterns
+6. **Update type definitions** if adding new types or interfaces
+7. **Add comments** for complex logic explaining the reasoning
+
+### Code Review Process
+
+When your PR is reviewed:
+
+- **Be open to feedback** - Code review helps improve the project and your skills
+- **Respond to comments** - Address all review comments or explain your reasoning
+- **Ask questions** - If feedback is unclear, ask for clarification
+- **Make requested changes** - Push new commits to address feedback
+- **Keep discussions respectful** - Be kind and professional
+
+### Quality Checklist
+
+Before submitting your PR, verify:
+
+- [ ] `npm run lint` passes with no errors
+- [ ] `npm run type-check` passes with no errors
+- [ ] `npm run build` succeeds without warnings
+- [ ] Manually tested in development server
+- [ ] Tested in production build
+- [ ] No `console.log`, `debugger`, or debug code left
+- [ ] No `any` types - all TypeScript types are specific
+- [ ] All errors are handled gracefully
+- [ ] Comments and JSDoc are up to date
+- [ ] No breaking changes, or breaking changes are documented
+- [ ] Related documentation is updated
+- [ ] Code follows project conventions and patterns
 
 ## Common Development Tasks
 
